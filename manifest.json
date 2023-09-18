@@ -1,21 +1,28 @@
 {
-  "manifest_version": 3,
-  "name": "Lockdown - 封锁",
-  "version": "1.0.0",
-  "description": "用于币安合约网格止损",
-  "icons": {
-    "16": "ico/favicon16X16.ico",
-    "32": "ico/favicon32X32.ico",
-    "48": "ico/favicon48X48.ico",
-    "64": "ico/favicon64X64.ico",
-    "128": "ico/favicon128X128.ico"
-  },
-  "content_scripts": [
-    {
-      "matches": ["https://*/*"],
-      "js": ["src/main.js"]
-    }
-  ],
-
-  "permissions": ["tabs", "scripting", "proxy", "storage", "activeTab"]
+    "manifest_version": 3,
+    "name": "Lockdown - 封锁",
+    "version": "1.0.0",
+    "description": "用于币安合约网格止损",
+    "icons": {
+        "16": "ico/favicon16X16.ico",
+        "32": "ico/favicon32X32.ico",
+        "48": "ico/favicon48X48.ico",
+        "64": "ico/favicon64X64.ico",
+        "128": "ico/favicon128X128.ico"
+    },
+    "content_scripts": [
+        {
+            "matches": ["https://www.binance.com/*"],
+            "js": ["src/main.js"]
+        },
+        {
+            "matches": ["https://www.binance.com/*/trading-bots/futures/grid/*"],
+            "js": ["src/components/grid/grid_main.js"]
+        },
+        {
+            "matches": ["https://www.binance.com/*/trading-bots/futures/grid/*"],
+            "css": ["src/components/grid/grid_style.min.css"]
+        }
+    ],
+    "permissions": ["tabs", "scripting", "proxy", "storage", "activeTab"]
 }

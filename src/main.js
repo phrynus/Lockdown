@@ -1,1 +1,1 @@
-console.log("enter");
+console.log("Lockdown - 封锁");
