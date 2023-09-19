@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Lockdown - 封锁",
-    "version": "0.1.0",
+    "version": "0.1.2",
     "description": "用于币安合约网格止损",
     "icons": {
         "16": "ico/favicon16X16.ico",
@@ -12,15 +12,15 @@
     },
     "content_scripts": [
         {
-            "matches": ["https://www.binance.com/*"],
+            "matches": ["https://*.binance.*/*"],
             "js": ["src/main.js", "src/common/lodash.min.js", "src/common/CustomObserver.js"]
         },
         {
-            "matches": ["https://www.binance.com/*/trading-bots/futures/grid/*"],
+            "matches": ["https://*.binance.*/*/trading-bots/futures/grid/*"],
             "css": ["src/components/grid/grid_style.min.css"]
         },
         {
-            "matches": ["https://www.binance.com/*/trading-bots/futures/grid/*"],
+            "matches": ["https://*.binance.*/*/trading-bots/futures/grid/*"],
             "js": ["src/components/grid/grid_main.js"]
         }
     ],
