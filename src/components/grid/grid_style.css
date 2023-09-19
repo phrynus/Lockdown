@@ -1,4 +1,79 @@
-.Lockdown_grid {
+* {
+  margin: 0;
+}
+
+.bn-table-tbody .bn-table-row td:last-child:hover .Lockdown_grid_menu {
+  display: block;
+  right: 100%;
+}
+.bn-table-tbody .bn-table-row td:last-child .Lockdown_grid_menu {
   margin: 0;
   padding: 0;
+  position: absolute;
+  bottom: 0;
+  right: -100%;
+  height: 100%;
+  transition: 0.5s;
+  display: none;
+}
+.bn-table-tbody .bn-table-row td:last-child .Lockdown_grid_menu .shell {
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+.bn-table-tbody .bn-table-row td:last-child .Lockdown_grid_menu .shell .tabs {
+  display: flex;
+  height: 26px;
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  margin-right: 5px;
+  width: 120px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.bn-table-tbody .bn-table-row td:last-child .Lockdown_grid_menu .shell .tabs input[type=checkbox] {
+  width: 40px;
+  height: 100%;
+  position: relative;
+}
+.bn-table-tbody .bn-table-row td:last-child .Lockdown_grid_menu .shell .tabs input[type=checkbox]:checked::after {
+  background-color: #1e90ff;
+}
+.bn-table-tbody .bn-table-row td:last-child .Lockdown_grid_menu .shell .tabs input[type=checkbox]::after {
+  content: var(--name);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 105%;
+  text-align: center;
+  line-height: 26px;
+  background-color: #f39c12;
+  font-weight: bold;
+  font-size: 12px;
+  color: #fff;
+  cursor: pointer;
+}
+.bn-table-tbody .bn-table-row td:last-child .Lockdown_grid_menu .shell .tabs input[type=text] {
+  width: 80px;
+  border-radius: 0;
+  border: 0;
+  border-left: 1px solid #999;
+  height: 100%;
+  padding: 0 6px;
+  background-color: rgba(0, 0, 0, 0);
+  margin: 0;
+  box-sizing: border-box;
+  outline: none;
+  text-align: center;
+}
+.bn-table-tbody .bn-table-row td:last-child > div:first-child {
+  padding: 0 8px;
+  justify-content: space-around;
+}
+.bn-table-tbody .bn-table-row td:last-child > div:first-child .action-btn svg {
+  font-size: 14px;
 }

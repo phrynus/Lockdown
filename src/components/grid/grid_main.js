@@ -31,20 +31,20 @@ class gridMain {
             let grid = {
                 id: null,
                 // 止损
-                loss: -3,
+                loss: -3.0,
                 lossWitch: true,
                 // 止盈
-                profit: 20,
+                profit: 20.0,
                 profitWitch: true,
                 // 回撤点位
-                profitLoss: 2,
+                profitLoss: 2.0,
                 profitLossWitch: true,
                 // 开始追踪回撤
                 profitLossGo: false,
                 // 开始追踪回撤值
-                profitLossGoValue: 4,
+                profitLossGoValue: 4.0,
                 // 最高值
-                profitLossTopValue: 0,
+                profitLossTopValue: 0.0,
                 // 历史点位
                 historicalPoints: [],
                 // json数据记录
@@ -127,6 +127,73 @@ class gridMain {
             });
             _this.gridDom.push(grid);
             //
+            let td = document.querySelector(`tbody>tr[data-row-key="${grid.id}"]`).querySelector("td:last-child");
+            _this.addHtmlTag(
+                "div",
+                td,
+                `
+                <div class="shell">
+                    <div class="tabs loss">
+                        <input type="checkbox" checked="${
+                            grid.lossWitch ? "checked" : ""
+                        }"  style="--name: '止损'" name="" id="" />
+                        <input type="text" name="" id="" value="${grid.loss}" placeholder="0.00" />
+                    </div>
+                    <div class="tabs profit">
+                        <input type="checkbox" checked="${
+                            grid.profitWitch ? "checked" : ""
+                        }" style="--name: '止盈'" name="" id="" />
+                        <input type="text" name="" id="" value="${grid.profit}" placeholder="0.00" />
+                    </div>
+                    <div class="tabs profitLoss" style="width: 160px;">
+                        <input type="checkbox" checked="${
+                            grid.profitLossWitch ? "checked" : ""
+                        }" style="--name: '回撤'" name="" id="" />
+                        <input type="text" name="" id="" value="${
+                            grid.profitLoss
+                        }" placeholder="0.00" style="width: 60px;" />
+                        <input type="text" name="" id="" value="${
+                            grid.profitLossGoValue
+                        }" placeholder="0.00" style="width: 60px;" />
+                    </div>
+                   
+                </div>
+            `,
+                { class: "Lockdown_grid_menu" },
+                (element) => {
+                    element.querySelector('.loss input[type="checkbox"]').addEventListener("change", (e) => {
+                        grid.lossWitch = e.target.checked;
+                        console.log(grid);
+                    });
+                    element.querySelector('.loss input[type="text"]').addEventListener("input", (e) => {
+                        grid.loss = parseFloat(e.target.value);
+                        console.log(grid);
+                    });
+                    //
+                    element.querySelector('.profit input[type="checkbox"]').addEventListener("change", (e) => {
+                        grid.profitWitch = e.target.checked;
+                        console.log(grid);
+                    });
+                    element.querySelector('.profit input[type="text"]').addEventListener("input", (e) => {
+                        grid.profit = parseFloat(e.target.value);
+                        console.log(grid);
+                    });
+                    //
+                    element.querySelector('.profitLoss input[type="checkbox"]').addEventListener("change", (e) => {
+                        grid.profitLossWitch = e.target.checked;
+                        console.log(grid);
+                    });
+                    element.querySelectorAll('.profitLoss input[type="text"]')[0].addEventListener("input", (e) => {
+                        grid.profitLoss = parseFloat(e.target.value);
+                        console.log(grid);
+                    });
+                    element.querySelectorAll('.profitLoss input[type="text"]')[1].addEventListener("input", (e) => {
+                        grid.profitLossGoValue = parseFloat(e.target.value);
+                        console.log(grid);
+                    });
+                }
+            );
+            //
             _this.addCustomAttributeToDescendants(elements[i], "data-row-key", grid.id);
         });
         // console.log(_this.gridDom);
@@ -158,14 +225,23 @@ class gridMain {
                         已匹配利润: grid.matchedProfit,
                         未匹配利润: grid.unmatchedProfit,
                         配对次数: grid.totalMatchedTrades,
+                        止损: grid.loss,
+                        止损开启: grid.lossWitch,
+                        止盈: grid.profit,
+                        止盈开启: grid.profitWitch,
+                        回撤点位: grid.profitLoss,
+                        回撤开启: grid.profitLossWitch,
+                        开始追踪回撤: grid.profitLossGo,
+                        开始追踪回撤值: grid.profitLossGoValue,
+                        最高值: grid.profitLossTopValue,
                         历史收益: grid.historicalPoints
                     });
                     grid.json = json;
-                    console.log(
-                        `ID：${grid.id} 收益发生变化 ${_this.percentStringToDecimal(
-                            previousData
-                        )} > ${_this.percentStringToDecimal(grid.totalProfit[1])}`
-                    );
+                    // console.log(
+                    //     `ID：${grid.id} 收益发生变化 ${_this.percentStringToDecimal(
+                    //         previousData
+                    //     )} > ${_this.percentStringToDecimal(grid.totalProfit[1])}`
+                    // );
                     // console.log(`JSON：${grid.json}`);
                     previousData = `${grid.totalProfit[1]}`;
                     _this.decisionMaking(grid);
@@ -184,23 +260,23 @@ class gridMain {
                     "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
                     "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
                 );
-                _this.stoporderForm(grid.id, grid.json);
+                _this.stoporderForm("止盈", grid.id, grid.json);
             } else if ((value >= grid.profitLossGoValue && grid.profitLossWitch) || grid.profitLossGo) {
                 grid.profitLossGo = true;
                 grid.profitLossTopValue = grid.profitLossTopValue =
                     0 || grid.profitLossTopValue < value ? value : grid.profitLossTopValue;
-                console.log(
-                    `ID：${grid.id} 正在追踪, 最高值: ${grid.profitLossTopValue} , 目前值: ${value} , 差值: ${
-                        grid.profitLossTopValue - value
-                    }`
-                );
+                // console.log(
+                //     `ID：${grid.id} 正在追踪, 最高值: ${grid.profitLossTopValue} , 目前值: ${value} , 差值: ${
+                //         grid.profitLossTopValue - value
+                //     }`
+                // );
                 if (grid.profitLossTopValue - value >= grid.profitLoss) {
                     console.log(
                         `%c Lockdown - Grid %c 追踪止盈: ${value}% : ${grid.totalProfit[0]} `,
                         "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
                         "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
                     );
-                    _this.stoporderForm(grid.id, grid.json);
+                    _this.stoporderForm("追踪止盈", grid.id, grid.json);
                 }
             }
         } else {
@@ -210,18 +286,18 @@ class gridMain {
                     "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
                     "background: #eb4d4b; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
                 );
-                _this.stoporderForm(grid.id, grid.json);
+                _this.stoporderForm("止损", grid.id, grid.json);
             }
         }
     };
     // stoporderForm
-    stoporderForm = (id, json) => {
+    stoporderForm = (name, id, json) => {
         document.querySelector(`tbody>tr[data-row-key="${id}"]`).querySelector(".action-btn div").click();
         let e = document.querySelectorAll(".terminate-button-group button")[1];
         setTimeout(() => {
             if (e) {
                 e.click();
-                localStorage.setItem(id, json);
+                localStorage.setItem(`${name}-${id}`, json);
                 window.location.reload();
             } else {
                 _this.stoporderForm(id);
@@ -246,7 +322,7 @@ class gridMain {
             this.addCustomAttributeToDescendants(childElement, name, data);
         }
     };
-    //
+    //格式化百分比
     percentStringToDecimal = (percentString) => {
         // 去掉百分号并转换为浮点数
         let decimal = parseFloat(percentString.replace("%", ""));
@@ -254,5 +330,25 @@ class gridMain {
         decimal *= 1;
         return decimal;
     };
+    //动态添加标签
+    addHtmlTag(Element, dad, html = "", set = {}, callback) {
+        // 创建指定类型的HTML元素
+        let create = document.createElement(Element);
+        // 将HTML内容添加到元素中
+        create.innerHTML = html;
+        // 添加元素的属性和属性值
+        for (let key in set) create.setAttribute(key, set[key]);
+        // 判断父元素类型是DOM节点还是CSS选择器
+        if (typeof dad == "object") {
+            // 如果是DOM节点，则直接将创建的元素添加到该节点中
+            dad.appendChild(create);
+        } else if (typeof dad == "string") {
+            // 如果是CSS选择器，则先获取匹配的第一个DOM节点，再将元素添加到该节点中
+            document.querySelector(dad).appendChild(create);
+        }
+        // 返回创建的元素
+        callback(create);
+        return create;
+    }
 }
-new gridMain();
+var grid = new gridMain();
