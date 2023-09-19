@@ -1,3 +1,6 @@
+// 监听延迟
+const DELAY = 200;
+// 网格主要方法
 class gridMain {
     constructor() {
         // 数据记录
@@ -246,10 +249,10 @@ class gridMain {
                     previousData = `${grid.totalProfit[1]}`;
                     _this.decisionMaking(grid);
                 }
-            }, 200);
+            }, DELAY);
         });
     };
-    // 数据判断、
+    // 数据判断
     decisionMaking = (grid) => {
         let _this = this;
         let value = _this.percentStringToDecimal(grid.totalProfit[1]);
@@ -290,7 +293,7 @@ class gridMain {
             }
         }
     };
-    // stoporderForm
+    // 结束订单
     stoporderForm = (name, id, json) => {
         document.querySelector(`tbody>tr[data-row-key="${id}"]`).querySelector(".action-btn div").click();
         let e = document.querySelectorAll(".terminate-button-group button")[1];
@@ -302,7 +305,7 @@ class gridMain {
             } else {
                 _this.stoporderForm(id);
             }
-        }, 200);
+        }, 100);
     };
     // 后代元素添加属性
     addCustomAttributeToDescendants = (element, name, data) => {
@@ -322,7 +325,7 @@ class gridMain {
             this.addCustomAttributeToDescendants(childElement, name, data);
         }
     };
-    //格式化百分比
+    // 格式化百分比
     percentStringToDecimal = (percentString) => {
         // 去掉百分号并转换为浮点数
         let decimal = parseFloat(percentString.replace("%", ""));
@@ -330,7 +333,7 @@ class gridMain {
         decimal *= 1;
         return decimal;
     };
-    //动态添加标签
+    // 动态添加标签
     addHtmlTag(Element, dad, html = "", set = {}, callback) {
         // 创建指定类型的HTML元素
         let create = document.createElement(Element);
