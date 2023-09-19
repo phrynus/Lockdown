@@ -1,12 +1,11 @@
-// console.log("gridMain");
-//document.querySelector('tbody>tr[data-row-key="353340677"]').querySelector('.action-btn div').click()
-//_.drop(document.querySelectorAll('tbody>tr'));
-var grid;
 class gridMain {
     constructor() {
+        // 数据记录
         this.gridDom = [];
+        // 网格初始化
         this.initializeSystem();
     }
+    // 网格初始化
     initializeSystem = () => {
         let _this = this;
         let timerId = null;
@@ -24,6 +23,7 @@ class gridMain {
         }
         timerId = setInterval(checkDOMLengthAndInitialize, 100);
     };
+    // 数据初始化
     initializeDate = (elements) => {
         let _this = this;
         Object.keys(elements).forEach((i) => {
@@ -112,35 +112,33 @@ class gridMain {
         console.log(_this.gridDom);
         _this.initializeMonitoring();
     };
+    // 数据监听
     initializeMonitoring = () => {
         let _this = this;
         Object.keys(_this.gridDom).forEach((i) => {
             let e = document
                 .querySelectorAll(`.bn-table tr[data-row-key="${_this.gridDom[i].id}"] td`)[5]
                 .querySelectorAll("span");
-            // 
+            //
             new CustomObserver(e, (element) => {
                 let grid = _this.gridDom.find((item) => item.id == element.dataset.rowKey);
-                console.log(`ID：${element.dataset.rowKey} 收益发生变化`, grid);
-                console.log(
-                    JSON.stringify({
-                        ID: grid.id,
-                        开始时间: grid.time,
-                        合约: grid.symbol,
-                        方向: grid.direction,
-                        总收益: grid.totalProfit,
-                        已匹配利润: grid.matchedProfit,
-                        未匹配利润: grid.unmatchedProfit,
-                        配对次数: grid.totalMatchedTrades
-                    })
-                );
+                let json = JSON.stringify({
+                    ID: grid.id,
+                    开始时间: grid.time,
+                    合约: grid.symbol,
+                    方向: grid.direction,
+                    总收益: grid.totalProfit,
+                    已匹配利润: grid.matchedProfit,
+                    未匹配利润: grid.unmatchedProfit,
+                    配对次数: grid.totalMatchedTrades
+                });
+                console.log(`ID：${element.dataset.rowKey} 收益发生变化`, json);
             });
-            // 
-            
+            //
         });
     };
     // 后代元素添加属性
-    addCustomAttributeToDescendants(element, name, data) {
+    addCustomAttributeToDescendants = (element, name, data) => {
         // 检查是否有子元素
         if (element.children.length === 0) {
             // 没有子元素，不需要递归
@@ -156,8 +154,6 @@ class gridMain {
             // 递归调用函数，处理子元素的后代元素
             this.addCustomAttributeToDescendants(childElement, name, data);
         }
-    }
+    };
 }
-
-//
-grid = new gridMain();
+new gridMain();
