@@ -1,5 +1,5 @@
 // 监听延迟
-const DELAY = 200;
+const DELAY = 100;
 // 网格主要方法
 class gridMain {
     constructor() {
