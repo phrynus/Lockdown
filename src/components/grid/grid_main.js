@@ -1,19 +1,3 @@
-// 止损
-const LOSSSwitch = true;
-const LOSS = -0.5;
-// 止盈
-const PROFITwitch = true;
-const PROFIT = 2;
-// 盈利回撤
-const PROFITLOSSSwitch = true;
-// 回撤点位
-const PROFITLOSS = 0.5;
-// 盈利多少的情况下开启盈利回撤
-const PROFITLOSSTRIGGER = 1;
-// 开始追踪止盈
-var PROFITLOSSstartUp = false;
-// 最高值
-var PROFITLOSSstartUpValue = 0;
 class gridMain {
     constructor() {
         // 数据记录
@@ -37,15 +21,6 @@ class gridMain {
                 );
                 _this.initializeDate(_.drop(document.querySelectorAll("tbody>tr")));
             }
-            // elapsedSeconds += 0.1;
-            // if (elapsedSeconds >= 10) {
-            //     clearInterval(timerId); // 如果超过10秒，停止定时器
-            //     console.log(
-            //         `%c Lockdown - Grid %c 数据为空 `,
-            //         "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
-            //         "background: #eb4d4b; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
-            //     );
-            // }
         }
         timerId = setInterval(checkDOMLengthAndInitialize, 500);
     };
@@ -54,7 +29,26 @@ class gridMain {
         let _this = this;
         Object.keys(elements).forEach((i) => {
             let grid = {
-                id: null
+                id: null,
+                // 止损
+                loss: -3,
+                lossWitch: true,
+                // 止盈
+                profit: 20,
+                profitWitch: true,
+                // 回撤点位
+                profitLoss: 2,
+                profitLossWitch: true,
+                // 开始追踪回撤
+                profitLossGo: false,
+                // 开始追踪回撤值
+                profitLossGoValue: 4,
+                // 最高值
+                profitLossTopValue: 0,
+                // 历史点位
+                historicalPoints: [],
+                // json数据记录
+                json: ""
                 // time,
                 // symbol,
                 // direction,
@@ -117,10 +111,10 @@ class gridMain {
                 get: function () {
                     return [
                         document
-                            .querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[6]
+                            .querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[7]
                             .querySelectorAll("span")[0].innerText,
                         document
-                            .querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[6]
+                            .querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[7]
                             .querySelectorAll("span")[1].innerText
                     ];
                 }
@@ -147,6 +141,14 @@ class gridMain {
             intervalId = setInterval(() => {
                 if (`${previousData}` != `${_this.gridDom[i].totalProfit[1]}`) {
                     let grid = _this.gridDom[i];
+                    if (grid.historicalPoints.length > 99) grid.historicalPoints.pop();
+                    let now = _.now();
+                    grid.historicalPoints.push({
+                        time: now,
+                        usdt: grid.totalProfit[0],
+                        state: grid.totalProfit[1]
+                    });
+                    grid.historicalPoints.sort((a, b) => b.time - a.time);
                     let json = JSON.stringify({
                         ID: grid.id,
                         开始时间: grid.time,
@@ -155,15 +157,18 @@ class gridMain {
                         总收益: grid.totalProfit,
                         已匹配利润: grid.matchedProfit,
                         未匹配利润: grid.unmatchedProfit,
-                        配对次数: grid.totalMatchedTrades
+                        配对次数: grid.totalMatchedTrades,
+                        历史收益: grid.historicalPoints
                     });
+                    grid.json = json;
                     console.log(
                         `ID：${grid.id} 收益发生变化 ${_this.percentStringToDecimal(
                             previousData
-                        )} > ${_this.percentStringToDecimal(_this.gridDom[i].totalProfit[1])}\nJSON：${json}`
+                        )} > ${_this.percentStringToDecimal(grid.totalProfit[1])}`
                     );
-                    previousData = `${_this.gridDom[i].totalProfit[1]}`;
-                    _this.decisionMaking(_this.gridDom[i]);
+                    // console.log(`JSON：${grid.json}`);
+                    previousData = `${grid.totalProfit[1]}`;
+                    _this.decisionMaking(grid);
                 }
             }, 200);
         });
@@ -173,54 +178,55 @@ class gridMain {
         let _this = this;
         let value = _this.percentStringToDecimal(grid.totalProfit[1]);
         if (value > 0) {
-            if (PROFIT <= value && PROFITwitch) {
+            if (grid.profit <= value && grid.profitWitch) {
                 console.log(
                     `%c Lockdown - Grid %c 止盈: ${value}% : ${grid.totalProfit[0]} `,
                     "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
                     "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
                 );
-                _this.stoporderForm(grid.id);
-            } else if ((value >= PROFITLOSSTRIGGER && PROFITLOSSSwitch) || PROFITLOSSstartUp) {
-                PROFITLOSSstartUp = true;
-                PROFITLOSSstartUpValue = PROFITLOSSstartUpValue =
-                    0 || PROFITLOSSstartUpValue < value ? value : PROFITLOSSstartUpValue;
+                _this.stoporderForm(grid.id, grid.json);
+            } else if ((value >= grid.profitLossGoValue && grid.profitLossWitch) || grid.profitLossGo) {
+                grid.profitLossGo = true;
+                grid.profitLossTopValue = grid.profitLossTopValue =
+                    0 || grid.profitLossTopValue < value ? value : grid.profitLossTopValue;
                 console.log(
-                    `ID：${grid.id} 正在追踪, 最高值: ${PROFITLOSSstartUpValue} , 目前值: ${value} , 差值: ${
-                        PROFITLOSSstartUpValue - value
+                    `ID：${grid.id} 正在追踪, 最高值: ${grid.profitLossTopValue} , 目前值: ${value} , 差值: ${
+                        grid.profitLossTopValue - value
                     }`
                 );
-                if (PROFITLOSSstartUpValue - value >= PROFITLOSS) {
+                if (grid.profitLossTopValue - value >= grid.profitLoss) {
                     console.log(
                         `%c Lockdown - Grid %c 追踪止盈: ${value}% : ${grid.totalProfit[0]} `,
                         "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
                         "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
                     );
-                    _this.stoporderForm(grid.id);
+                    _this.stoporderForm(grid.id, grid.json);
                 }
             }
         } else {
-            if (LOSS >= value && LOSSSwitch) {
+            if (grid.loss >= value && grid.lossWitch) {
                 console.log(
                     `%c Lockdown - Grid %c 止损: ${value}% : ${grid.totalProfit[0]}`,
                     "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
                     "background: #eb4d4b; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
                 );
-                _this.stoporderForm(grid.id);
+                _this.stoporderForm(grid.id, grid.json);
             }
         }
     };
     // stoporderForm
-    stoporderForm = (id) => {
+    stoporderForm = (id, json) => {
         document.querySelector(`tbody>tr[data-row-key="${id}"]`).querySelector(".action-btn div").click();
         let e = document.querySelectorAll(".terminate-button-group button")[1];
         setTimeout(() => {
             if (e) {
                 e.click();
+                localStorage.setItem(id, json);
                 window.location.reload();
             } else {
                 _this.stoporderForm(id);
             }
-        }, 100);
+        }, 200);
     };
     // 后代元素添加属性
     addCustomAttributeToDescendants = (element, name, data) => {
