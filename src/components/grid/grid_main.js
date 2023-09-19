@@ -132,7 +132,7 @@ class gridMain {
                     未匹配利润: grid.unmatchedProfit,
                     配对次数: grid.totalMatchedTrades
                 });
-                console.log(`ID：${element.dataset.rowKey} 收益发生变化 \nJSON：${json}`);
+                console.log(`ID：${element.dataset.rowKey} 收益发生变化\nJSON：${json}`);
             });
             //
         });
