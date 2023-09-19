@@ -26,3 +26,4 @@ dist-ssr
 /dist/*/*/*
 !/dist/index.html
 Lockdown.pem
+Lockdown.crx
