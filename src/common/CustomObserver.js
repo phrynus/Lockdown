@@ -1,24 +1,34 @@
 class CustomObserver {
-    constructor(t, e) {
-        (this.elements = t),
-            (this.callback = e),
-            (this.observer = new MutationObserver(this.handleMutation.bind(this))),
-            this.observeElements();
+    constructor(selector, callback) {
+      this.elements = selector;
+      this.callback = callback;
+      this.observer = new MutationObserver(this.handleMutation.bind(this));
+      
+      this.observeElements();
     }
+  
     observeElements() {
-        this.elements.forEach((t) => {
-            this.observer.observe(t, { attributes: !0, childList: !0, subtree: !0 });
-        });
+      this.elements.forEach(element => {
+        this.observer.observe(element, { attributes: true, childList: true, subtree: true });
+      });
     }
-    handleMutation(t) {
-        for (let e of t)
-            ("childList" === e.type || ("attributes" === e.type && e.attributeName === this.innerText)) &&
-                ("attributes" === e.type
-                    ? this.callback(e.target.getAttribute(this.innerText))
-                    : this.callback(e.target));
+  
+    handleMutation(mutationsList) {
+      for (let mutation of mutationsList) {
+        if (mutation.type === 'childList' || (mutation.type === 'attributes' && mutation.attributeName === this.innerText)) {
+          // 处理发生变化的情况
+          if (mutation.type === 'attributes') {
+            // 如果是属性变化，传递新的属性值
+            this.callback(mutation.target.getAttribute(this.innerText));
+          } else {
+            // 否则传递 innerText 值
+            this.callback(mutation.target);
+          }
+        }
+      }
     }
+  
     disconnect() {
-        this.observer.disconnect();
+      this.observer.disconnect();
     }
-}
-function
+  }

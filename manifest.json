@@ -13,15 +13,15 @@
     "content_scripts": [
         {
             "matches": ["https://www.binance.com/*"],
-            "js": ["src/main.js"]
-        },
-        {
-            "matches": ["https://www.binance.com/*/trading-bots/futures/grid/*"],
-            "js": ["src/components/grid/grid_main.js"]
+            "js": ["src/main.js", "src/common/lodash.min.js", "src/common/CustomObserver.js"]
         },
         {
             "matches": ["https://www.binance.com/*/trading-bots/futures/grid/*"],
             "css": ["src/components/grid/grid_style.min.css"]
+        },
+        {
+            "matches": ["https://www.binance.com/*/trading-bots/futures/grid/*"],
+            "js": ["src/components/grid/grid_main.js"]
         }
     ],
     "permissions": ["tabs", "scripting", "proxy", "storage", "activeTab"]
