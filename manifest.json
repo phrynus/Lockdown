@@ -13,7 +13,8 @@
     "content_scripts": [
         {
             "matches": ["https://www.binance.com/*"],
-            "js": ["src/main.js", "src/common/lodash.min.js", "src/common/ContentChangeMonitor.js"]
+            "js": ["src/main.js", "src/common/lodash.min.js", "src/common/ContentChangeMonitor.js"],
+            "run_at": "document_start"
         },
         {
             "matches": ["https://www.binance.com/*/trading-bots/futures/grid/*"],
@@ -24,5 +25,5 @@
             "js": ["src/components/grid/grid_main.js"]
         }
     ],
-    "permissions": ["scripting", "storage"]
+    "permissions": ["tabs", "scripting", "proxy", "storage", "activeTab"]
 }

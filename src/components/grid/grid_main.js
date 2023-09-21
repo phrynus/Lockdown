@@ -3,6 +3,7 @@ const DELAY = 100;
 var GRID;
 var GRIDtimerId = null;
 var GRIDMonitor = null;
+var GRIDElength = null;
 // 网格主要方法
 class gridMain {
     constructor() {
@@ -239,23 +240,28 @@ class gridMain {
             "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
             "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
         );
-        GRIDMonitor = new ContentChangeMonitor(document.querySelector(".bn-table-tbody"), "TBODY", () => {
-            // console.log("内容发生变化:", changedContent);
-            console.log(
-                `%c Lockdown - Grid %c 重新加载中 `,
-                "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
-                "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
-            );
-            GRIDtimerId = setInterval(function () {
-                let e = document.querySelector(".bn-table-tbody>tr");
-                if (e) {
-                    clearInterval(GRIDtimerId); // 停止定时器
-                    GRIDtimerId = null;
-                    GRID = new gridMain();
-                }
-            });
-            // 在这里执行你的自定义操作
-        });
+        GRIDMonitor = setInterval(function () {
+            let e = document.querySelectorAll(".bn-table-tbody>tr");
+            if (GRIDElength != e.length) {
+                clearInterval(GRIDMonitor); // 停止定时器
+                GRIDMonitor = null;
+                console.log(
+                    `%c Lockdown - Grid %c 重新加载中 `,
+                    "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
+                    "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
+                );
+                GRIDtimerId = setInterval(function () {
+                    let e = document.querySelector(".bn-table-tbody>tr");
+                    if (e) {
+                        clearInterval(GRIDtimerId); // 停止定时器
+                        GRIDtimerId = null;
+                        GRIDElength = document.querySelectorAll(".bn-table-tbody>tr").length;
+                        GRID = new gridMain();
+                    }
+                }, 500);
+            }
+        }, 1000);
+
         // console.log(_this.gridDom);
         _this.initializeMonitoring();
     }
@@ -334,11 +340,19 @@ class gridMain {
                 timerId = null;
             }
         }, 10);
-        console.log(
-            `%c Lockdown - Grid %c ${name}: ${grid.totalProfit[0]} : ${grid.totalProfit[1]} `,
-            "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
-            "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
-        );
+        if ((name = "止盈")) {
+            console.log(
+                `%c Lockdown - Grid %c ${name}: ${grid.totalProfit[0]}% : ${grid.totalProfit[1]} `,
+                "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
+                "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
+            );
+        } else {
+            console.log(
+                `%c Lockdown - Grid %c ${name}`,
+                "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
+                "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
+            );
+        }
     }
     // 后代元素添加属性
     addCustomAttributeToDescendants(element, name, data) {
@@ -393,6 +407,69 @@ GRIDtimerId = setInterval(function () {
     if (e) {
         clearInterval(GRIDtimerId); // 停止定时器
         GRIDtimerId = null;
+        GRIDElength = document.querySelectorAll(".bn-table-tbody>tr").length;
         GRID = new gridMain();
     }
 });
+// initializeMonitoring() {
+//     let _this = this;
+//     Object.keys(_this.gridDom).forEach((i) => {
+//         let previousData = _this.gridDom[i].totalProfit[1];
+//         let intervalId = null;
+//         let grid = _this.gridDom[i];
+//         intervalId = new ContentChangeMonitor(
+//             document.querySelector(`tbody>tr[data-row-key="${grid.id}"]`),
+//             "",
+//             (changedContent) => {
+//                 console.log("内容发生变化:", changedContent);
+//                 if (_this.destruction) {
+//                     intervalId.stopMonitoring();
+//                     previousData = null;
+//                 } else if (`${previousData}` != `${grid.totalProfit[1]}`) {
+//                     previousData = `${grid.totalProfit[1]}`;
+//                     _this.decisionMaking(grid);
+//                     grid = null;
+//                 }
+//             }
+//         );
+//         console.log(intervalId);
+//     });
+// }
+// initializeMonitoring() {
+//     let _this = this;
+//     Object.keys(_this.gridDom).forEach((i) => {
+//         let previousData = _this.gridDom[i].totalProfit[1];
+//         let intervalId = null;
+//         intervalId = setInterval(() => {
+//             let grid = _this.gridDom[i];
+//             if (`${previousData}` != `${grid.totalProfit[1]}`) {
+//                 previousData = `${grid.totalProfit[1]}`;
+//                 _this.decisionMaking(grid);
+//                 grid = null;
+//             }
+//             if (_this.destruction) {
+//                 clearInterval(intervalId);
+//                 intervalId = null;
+//                 previousData = null;
+//             }
+//         }, DELAY);
+//     });
+// }
+// =================
+// GRIDMonitor = new ContentChangeMonitor(document.querySelector(".bn-table-tbody"), "TBODY", () => {
+//     // console.log("内容发生变化:", changedContent);
+//     console.log(
+//         `%c Lockdown - Grid %c 重新加载中 `,
+//         "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
+//         "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
+//     );
+//     GRIDtimerId = setInterval(function () {
+//         let e = document.querySelector(".bn-table-tbody>tr");
+//         if (e) {
+//             clearInterval(GRIDtimerId); // 停止定时器
+//             GRIDtimerId = null;
+//             GRID = new gridMain();
+//         }
+//     }, 500);
+//     // 在这里执行你的自定义操作
+// });
