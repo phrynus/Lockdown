@@ -336,7 +336,7 @@ class gridMain {
         }, 10);
         if ((name = "止盈")) {
             console.log(
-                `%c Lockdown - Grid %c ${name}: ${grid.totalProfit[0]}% : ${grid.totalProfit[1]} `,
+                `%c Lockdown - Grid %c ${name}: ${grid.totalProfit[0]} : ${grid.totalProfit[1]} `,
                 "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
                 "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
             );
