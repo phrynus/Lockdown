@@ -24,5 +24,5 @@
             "js": ["src/components/grid/grid_main.js"]
         }
     ],
-    "permissions": ["tabs", "scripting", "proxy", "storage", "activeTab"]
+    "permissions": ["scripting", "storage"]
 }
