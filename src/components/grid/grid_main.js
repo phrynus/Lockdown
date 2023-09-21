@@ -1,34 +1,26 @@
 // 监听延迟
-const DELAY = 100;
+const DELAY = 50;
+var GRID;
+var GRIDtimerId = null;
+var GRIDMonitor = null;
 // 网格主要方法
 class gridMain {
     constructor() {
         // 数据记录
         this.gridDom = [];
+        //销毁
+        this.destruction = false;
         // 网格初始化
         this.initializeSystem();
     }
     // 网格初始化
-    initializeSystem = () => {
+    initializeSystem() {
         let _this = this;
-        let timerId = null;
-        // let elapsedSeconds = 0;
-        function checkDOMLengthAndInitialize(e) {
-            const elements = document.querySelectorAll("tbody>tr"); // 替换为您的选择器
-            if (elements.length >= 1) {
-                clearInterval(timerId); // 停止定时器
-                console.log(
-                    `%c Lockdown - Grid %c 0.1.2 `,
-                    "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
-                    "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
-                );
-                _this.initializeDate(_.drop(document.querySelectorAll("tbody>tr")));
-            }
-        }
-        timerId = setInterval(checkDOMLengthAndInitialize, 500);
-    };
+        _this.initializeDate(_.drop(document.querySelectorAll("tbody>tr")));
+        GRIDMonitor = null;
+    }
     // 数据初始化
-    initializeDate = (elements) => {
+    initializeDate(elements) {
         let _this = this;
         Object.keys(elements).forEach((i) => {
             let grid = {
@@ -64,68 +56,109 @@ class gridMain {
             // 开始时间
             Object.defineProperty(grid, "time", {
                 get: function () {
-                    return document
-                        .querySelector(`.bn-table tr[data-row-key="${this.id}"] .css-vurnku`)
-                        .innerText.replace(/\n/g, " ");
+                    let e = document.querySelector(`.bn-table tr[data-row-key="${this.id}"] .css-vurnku`);
+                    if (e) {
+                        return e.innerText.replace(/\n/g, " ");
+                    } else {
+                        // 销毁
+                        this.destruction = true;
+                        // reset();
+                        return "数据有误";
+                    }
                 }
             });
             // 合约
             Object.defineProperty(grid, "symbol", {
                 get: function () {
-                    return document.querySelector(
+                    let e = document.querySelector(
                         `.bn-table tr[data-row-key="${this.id}"] .symbol-shrink .symbol-full-name`
-                    ).innerText;
+                    );
+                    if (e) {
+                        return e.innerText;
+                    } else {
+                        // 销毁
+                        this.destruction = true;
+                        // 重置
+                        // reset();
+                        return "数据有误";
+                    }
                 }
             });
             // 方向
             Object.defineProperty(grid, "direction", {
                 get: function () {
-                    return document.querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[3].innerText;
+                    let e = document.querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[3];
+                    if (e) {
+                        return e.innerText;
+                    } else {
+                        // 销毁
+                        this.destruction = true;
+                        // 重置
+                        // reset();
+                        return "数据有误";
+                    }
                 }
             });
             // 总收益
             Object.defineProperty(grid, "totalProfit", {
                 get: function () {
-                    return [
-                        document
-                            .querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[5]
-                            .querySelectorAll("span")[0].innerText,
-                        document
-                            .querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[5]
-                            .querySelectorAll("span")[1].innerText
-                    ];
+                    let e = document.querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[5];
+                    if (e) {
+                        return [e.querySelectorAll("span")[0].innerText, e.querySelectorAll("span")[1].innerText];
+                    } else {
+                        // 销毁
+                        this.destruction = true;
+                        // 重置
+                        // reset();
+                        return "数据有误";
+                    }
                 }
             });
             // 已匹配利润
             Object.defineProperty(grid, "matchedProfit", {
                 get: function () {
-                    return [
-                        document
-                            .querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[6]
-                            .querySelectorAll("span")[0].innerText,
-                        document
-                            .querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[6]
-                            .querySelectorAll("span")[1].innerText
-                    ];
+                    let e = document.querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[6];
+
+                    if (e) {
+                        return [e.querySelectorAll("span")[0].innerText, e.querySelectorAll("span")[1].innerText];
+                    } else {
+                        // 销毁
+                        this.destruction = true;
+                        // 重置
+                        // reset();
+                        return "数据有误";
+                    }
                 }
             });
             // 未匹配利润
             Object.defineProperty(grid, "unmatchedProfit", {
                 get: function () {
-                    return [
-                        document
-                            .querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[7]
-                            .querySelectorAll("span")[0].innerText,
-                        document
-                            .querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[7]
-                            .querySelectorAll("span")[1].innerText
-                    ];
+                    let e = document.querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[7];
+
+                    if (e) {
+                        return [e.querySelectorAll("span")[0].innerText, e.querySelectorAll("span")[1].innerText];
+                    } else {
+                        // 销毁
+                        this.destruction = true;
+                        // 重置
+                        // reset();
+                        return "数据有误";
+                    }
                 }
             });
             // 配对次数
             Object.defineProperty(grid, "totalMatchedTrades", {
                 get: function () {
-                    return document.querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[8].innerText;
+                    let e = document.querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[8];
+                    if (e) {
+                        return e.innerText;
+                    } else {
+                        // 销毁
+                        this.destruction = true;
+                        // 重置
+                        // reset();
+                        return "数据有误";
+                    }
                 }
             });
             _this.gridDom.push(grid);
@@ -198,48 +231,77 @@ class gridMain {
             );
             //
             _this.addCustomAttributeToDescendants(elements[i], "data-row-key", grid.id);
+            // 第一次判断
+            _this.decisionMaking(grid);
+        });
+        console.log(
+            `%c Lockdown - Grid %c 初始化成功 `,
+            "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
+            "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
+        );
+        GRIDMonitor = new ContentChangeMonitor(document.querySelector(".bn-table-tbody"), "TBODY", () => {
+            // console.log("内容发生变化:", changedContent);
+            console.log(
+                `%c Lockdown - Grid %c 重新加载中 `,
+                "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
+                "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
+            );
+            GRIDtimerId = setInterval(function () {
+                let e = document.querySelector(".bn-table-tbody>tr");
+                if (e) {
+                    clearInterval(GRIDtimerId); // 停止定时器
+                    GRIDtimerId = null;
+                    GRID = new gridMain();
+                }
+            });
+            // 在这里执行你的自定义操作
         });
         // console.log(_this.gridDom);
         _this.initializeMonitoring();
-    };
+    }
     // 初始化数据监听
-    initializeMonitoring = () => {
+    initializeMonitoring() {
         let _this = this;
         Object.keys(_this.gridDom).forEach((i) => {
             let previousData = _this.gridDom[i].totalProfit[1];
             let intervalId = null;
             intervalId = setInterval(() => {
-                if (`${previousData}` != `${_this.gridDom[i].totalProfit[1]}`) {
-                    let grid = _this.gridDom[i];
-                    if (grid.historicalPoints.length > 99) grid.historicalPoints.pop();
-                    let now = _.now();
-                    grid.historicalPoints.push({
-                        time: now,
-                        usdt: grid.totalProfit[0],
-                        state: grid.totalProfit[1]
-                    });
-                    grid.historicalPoints.sort((a, b) => b.time - a.time);
-                    let json = JSON.stringify({
-                        ID: grid.id,
-                        开始时间: grid.time,
-                        合约: grid.symbol,
-                        方向: grid.direction,
-                        总收益: grid.totalProfit,
-                        已匹配利润: grid.matchedProfit,
-                        未匹配利润: grid.unmatchedProfit,
-                        配对次数: grid.totalMatchedTrades,
-                        止损: grid.loss,
-                        止损开启: grid.lossWitch,
-                        止盈: grid.profit,
-                        止盈开启: grid.profitWitch,
-                        回撤点位: grid.profitLoss,
-                        回撤开启: grid.profitLossWitch,
-                        开始追踪回撤: grid.profitLossGo,
-                        开始追踪回撤值: grid.profitLossGoValue,
-                        最高值: grid.profitLossTopValue,
-                        历史收益: grid.historicalPoints
-                    });
-                    grid.json = json;
+                let grid = _this.gridDom[i];
+                if (_this.destruction) {
+                    clearInterval(intervalId);
+                    intervalId = null;
+                    previousData = null;
+                }
+                if (`${previousData}` != `${grid.totalProfit[1]}`) {
+                    // if (grid.historicalPoints.length > 99) grid.historicalPoints.pop();
+                    // let now = _.now();
+                    // grid.historicalPoints.push({
+                    //     time: now,
+                    //     usdt: grid.totalProfit[0],
+                    //     state: grid.totalProfit[1]
+                    // });
+                    // grid.historicalPoints.sort((a, b) => b.time - a.time);
+                    // let json = JSON.stringify({
+                    //     ID: grid.id,
+                    //     开始时间: grid.time,
+                    //     合约: grid.symbol,
+                    //     方向: grid.direction,
+                    //     总收益: grid.totalProfit,
+                    //     已匹配利润: grid.matchedProfit,
+                    //     未匹配利润: grid.unmatchedProfit,
+                    //     配对次数: grid.totalMatchedTrades,
+                    //     止损: grid.loss,
+                    //     止损开启: grid.lossWitch,
+                    //     止盈: grid.profit,
+                    //     止盈开启: grid.profitWitch,
+                    //     回撤点位: grid.profitLoss,
+                    //     回撤开启: grid.profitLossWitch,
+                    //     开始追踪回撤: grid.profitLossGo,
+                    //     开始追踪回撤值: grid.profitLossGoValue,
+                    //     最高值: grid.profitLossTopValue,
+                    //     历史收益: grid.historicalPoints
+                    // });
+                    // grid.json = json;
                     // console.log(
                     //     `ID：${grid.id} 收益发生变化 ${_this.percentStringToDecimal(
                     //         previousData
@@ -248,67 +310,66 @@ class gridMain {
                     // console.log(`JSON：${grid.json}`);
                     previousData = `${grid.totalProfit[1]}`;
                     _this.decisionMaking(grid);
+                    grid = null;
                 }
             }, DELAY);
         });
-    };
+    }
     // 数据判断
-    decisionMaking = (grid) => {
+    decisionMaking(grid) {
         let _this = this;
         let value = _this.percentStringToDecimal(grid.totalProfit[1]);
         if (value > 0) {
             if (grid.profit <= value && grid.profitWitch) {
-                console.log(
-                    `%c Lockdown - Grid %c 止盈: ${value}% : ${grid.totalProfit[0]} `,
-                    "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
-                    "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
-                );
-                _this.stoporderForm("止盈", grid.id, grid.json);
+                _this.stoporderForm("止盈", grid);
             } else if ((value >= grid.profitLossGoValue && grid.profitLossWitch) || grid.profitLossGo) {
                 grid.profitLossGo = true;
                 grid.profitLossTopValue = grid.profitLossTopValue =
                     0 || grid.profitLossTopValue < value ? value : grid.profitLossTopValue;
-                // console.log(
-                //     `ID：${grid.id} 正在追踪, 最高值: ${grid.profitLossTopValue} , 目前值: ${value} , 差值: ${
-                //         grid.profitLossTopValue - value
-                //     }`
-                // );
                 if (grid.profitLossTopValue - value >= grid.profitLoss) {
-                    console.log(
-                        `%c Lockdown - Grid %c 追踪止盈: ${value}% : ${grid.totalProfit[0]} `,
-                        "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
-                        "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
-                    );
-                    _this.stoporderForm("追踪止盈", grid.id, grid.json);
+                    _this.stoporderForm("追踪止盈", grid);
                 }
             }
         } else {
             if (grid.loss >= value && grid.lossWitch) {
-                console.log(
-                    `%c Lockdown - Grid %c 止损: ${value}% : ${grid.totalProfit[0]}`,
-                    "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
-                    "background: #eb4d4b; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
-                );
-                _this.stoporderForm("止损", grid.id, grid.json);
+                _this.stoporderForm("止损", grid);
             }
         }
-    };
+    }
     // 结束订单
-    stoporderForm = (name, id, json) => {
-        document.querySelector(`tbody>tr[data-row-key="${id}"]`).querySelector(".action-btn div").click();
-        let e = document.querySelectorAll(".terminate-button-group button")[1];
-        setTimeout(() => {
-            if (e) {
-                e.click();
-                localStorage.setItem(`${name}-${id}`, json);
-                window.location.reload();
-            } else {
-                _this.stoporderForm(id);
+    stoporderForm(name, grid, json) {
+        let _this = this;
+        let timerId = null;
+        let timerId1 = null;
+        timerId = setInterval(function () {
+            let btn = document.querySelector(`tbody>tr[data-row-key="${grid.id}"]`);
+            if (btn) {
+                btn.querySelector(".bn-table-cell-fix-right-first .action-btn div").click();
+                timerId1 = setInterval(function () {
+                    let e = document.querySelectorAll(".terminate-button-group button")[1];
+                    if (e) {
+                        clearInterval(timerId1);
+                        timerId1 = null;
+                        //
+                        e.click();
+                        _this.destruction = false;
+                        // localStorage.setItem(`Lockdown-${name}-${grid.id}`, json);
+                        GRID = null;
+                        console.log(
+                            `%c Lockdown - Grid %c ${name}: ${grid.totalProfit[0]}% : ${grid.totalProfit[1]} `,
+                            "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
+                            "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
+                        );
+                        // reset();
+                    }
+                }, 10);
+                clearInterval(timerId);
+                timerId = null;
             }
-        }, 100);
-    };
+        }, 10);
+    }
     // 后代元素添加属性
-    addCustomAttributeToDescendants = (element, name, data) => {
+    addCustomAttributeToDescendants(element, name, data) {
         // 检查是否有子元素
         if (element.children.length === 0) {
             // 没有子元素，不需要递归
@@ -324,15 +385,15 @@ class gridMain {
             // 递归调用函数，处理子元素的后代元素
             this.addCustomAttributeToDescendants(childElement, name, data);
         }
-    };
+    }
     // 格式化百分比
-    percentStringToDecimal = (percentString) => {
+    percentStringToDecimal(percentString) {
         // 去掉百分号并转换为浮点数
         let decimal = parseFloat(percentString.replace("%", ""));
         // 修正类型
         decimal *= 1;
         return decimal;
-    };
+    }
     // 动态添加标签
     addHtmlTag(Element, dad, html = "", set = {}, callback) {
         // 创建指定类型的HTML元素
@@ -354,4 +415,12 @@ class gridMain {
         return create;
     }
 }
-var grid = new gridMain();
+// GRID = new gridMain();
+GRIDtimerId = setInterval(function () {
+    let e = document.querySelector(".bn-table-tbody>tr");
+    if (e) {
+        clearInterval(GRIDtimerId); // 停止定时器
+        GRIDtimerId = null;
+        GRID = new gridMain();
+    }
+});
