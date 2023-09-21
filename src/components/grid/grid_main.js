@@ -1,5 +1,5 @@
 // 监听延迟
-const DELAY = 50;
+const DELAY = 100;
 var GRID;
 var GRIDtimerId = null;
 var GRIDMonitor = null;
