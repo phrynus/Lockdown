@@ -273,41 +273,6 @@ class gridMain {
                     previousData = null;
                 }
                 if (`${previousData}` != `${grid.totalProfit[1]}`) {
-                    // if (grid.historicalPoints.length > 99) grid.historicalPoints.pop();
-                    // let now = _.now();
-                    // grid.historicalPoints.push({
-                    //     time: now,
-                    //     usdt: grid.totalProfit[0],
-                    //     state: grid.totalProfit[1]
-                    // });
-                    // grid.historicalPoints.sort((a, b) => b.time - a.time);
-                    // let json = JSON.stringify({
-                    //     ID: grid.id,
-                    //     开始时间: grid.time,
-                    //     合约: grid.symbol,
-                    //     方向: grid.direction,
-                    //     总收益: grid.totalProfit,
-                    //     已匹配利润: grid.matchedProfit,
-                    //     未匹配利润: grid.unmatchedProfit,
-                    //     配对次数: grid.totalMatchedTrades,
-                    //     止损: grid.loss,
-                    //     止损开启: grid.lossWitch,
-                    //     止盈: grid.profit,
-                    //     止盈开启: grid.profitWitch,
-                    //     回撤点位: grid.profitLoss,
-                    //     回撤开启: grid.profitLossWitch,
-                    //     开始追踪回撤: grid.profitLossGo,
-                    //     开始追踪回撤值: grid.profitLossGoValue,
-                    //     最高值: grid.profitLossTopValue,
-                    //     历史收益: grid.historicalPoints
-                    // });
-                    // grid.json = json;
-                    // console.log(
-                    //     `ID：${grid.id} 收益发生变化 ${_this.percentStringToDecimal(
-                    //         previousData
-                    //     )} > ${_this.percentStringToDecimal(grid.totalProfit[1])}`
-                    // );
-                    // console.log(`JSON：${grid.json}`);
                     previousData = `${grid.totalProfit[1]}`;
                     _this.decisionMaking(grid);
                     grid = null;
