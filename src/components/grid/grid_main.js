@@ -57,7 +57,7 @@ class gridMain {
             Object.defineProperty(grid, "time", {
                 get: function () {
                     let e = document.querySelector(`.bn-table tr[data-row-key="${this.id}"] .css-vurnku`);
-                    if (e) {
+                    if (e && !this.destruction) {
                         return e.innerText.replace(/\n/g, " ");
                     } else {
                         // 销毁
@@ -73,7 +73,7 @@ class gridMain {
                     let e = document.querySelector(
                         `.bn-table tr[data-row-key="${this.id}"] .symbol-shrink .symbol-full-name`
                     );
-                    if (e) {
+                    if (e && !this.destruction) {
                         return e.innerText;
                     } else {
                         // 销毁
@@ -88,7 +88,7 @@ class gridMain {
             Object.defineProperty(grid, "direction", {
                 get: function () {
                     let e = document.querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[3];
-                    if (e) {
+                    if (e && !this.destruction) {
                         return e.innerText;
                     } else {
                         // 销毁
@@ -103,7 +103,7 @@ class gridMain {
             Object.defineProperty(grid, "totalProfit", {
                 get: function () {
                     let e = document.querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[5];
-                    if (e) {
+                    if (e && !this.destruction) {
                         return [e.querySelectorAll("span")[0].innerText, e.querySelectorAll("span")[1].innerText];
                     } else {
                         // 销毁
@@ -119,7 +119,7 @@ class gridMain {
                 get: function () {
                     let e = document.querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[6];
 
-                    if (e) {
+                    if (e && !this.destruction) {
                         return [e.querySelectorAll("span")[0].innerText, e.querySelectorAll("span")[1].innerText];
                     } else {
                         // 销毁
@@ -135,7 +135,7 @@ class gridMain {
                 get: function () {
                     let e = document.querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[7];
 
-                    if (e) {
+                    if (e && !this.destruction) {
                         return [e.querySelectorAll("span")[0].innerText, e.querySelectorAll("span")[1].innerText];
                     } else {
                         // 销毁
@@ -150,7 +150,7 @@ class gridMain {
             Object.defineProperty(grid, "totalMatchedTrades", {
                 get: function () {
                     let e = document.querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[8];
-                    if (e) {
+                    if (e && !this.destruction) {
                         return e.innerText;
                     } else {
                         // 销毁
@@ -267,15 +267,15 @@ class gridMain {
             let intervalId = null;
             intervalId = setInterval(() => {
                 let grid = _this.gridDom[i];
-                if (_this.destruction) {
-                    clearInterval(intervalId);
-                    intervalId = null;
-                    previousData = null;
-                }
                 if (`${previousData}` != `${grid.totalProfit[1]}`) {
                     previousData = `${grid.totalProfit[1]}`;
                     _this.decisionMaking(grid);
                     grid = null;
+                }
+                if (_this.destruction) {
+                    clearInterval(intervalId);
+                    intervalId = null;
+                    previousData = null;
                 }
             }, DELAY);
         });
@@ -306,12 +306,8 @@ class gridMain {
         let _this = this;
         let timerId = null;
         let timerId1 = null;
-        let timerId3 = null;
-        console.log(
-            `%c Lockdown - Grid %c ${name}: ${grid.totalProfit[0]}% : ${grid.totalProfit[1]} `,
-            "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
-            "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
-        );
+        let timerId2 = null;
+        _this.destruction = false;
         timerId = setInterval(function () {
             let btn = document.querySelector(`tbody>tr[data-row-key="${grid.id}"]`);
             if (btn) {
@@ -324,7 +320,6 @@ class gridMain {
                             if (!e) {
                                 clearInterval(timerId2);
                                 timerId2 = null;
-                                _this.destruction = false;
                                 GRID = null;
                             } else {
                                 e.click();
@@ -338,6 +333,19 @@ class gridMain {
                 timerId = null;
             }
         }, 10);
+        if ((name = "止盈")) {
+            console.log(
+                `%c Lockdown - Grid %c ${name}: ${grid.totalProfit[0]}% : ${grid.totalProfit[1]} `,
+                "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
+                "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
+            );
+        } else {
+            console.log(
+                `%c Lockdown - Grid %c ${name}`,
+                "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
+                "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
+            );
+        }
     }
     // 后代元素添加属性
     addCustomAttributeToDescendants(element, name, data) {
