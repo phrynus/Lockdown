@@ -282,8 +282,8 @@ class gridMain {
     }
     // 数据判断
     decisionMaking(grid) {
-        if (_this.destruction) return;
         let _this = this;
+        if (_this.destruction) return;
         let value = _this.percentStringToDecimal(grid.totalProfit[1]);
         if (value > 0) {
             if (grid.profit <= value && grid.profitWitch) {
