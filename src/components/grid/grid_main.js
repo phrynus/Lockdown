@@ -306,6 +306,12 @@ class gridMain {
         let _this = this;
         let timerId = null;
         let timerId1 = null;
+        let timerId3 = null;
+        console.log(
+            `%c Lockdown - Grid %c ${name}: ${grid.totalProfit[0]}% : ${grid.totalProfit[1]} `,
+            "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
+            "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
+        );
         timerId = setInterval(function () {
             let btn = document.querySelector(`tbody>tr[data-row-key="${grid.id}"]`);
             if (btn) {
@@ -313,19 +319,19 @@ class gridMain {
                 timerId1 = setInterval(function () {
                     let e = document.querySelectorAll(".terminate-button-group button")[1];
                     if (e) {
+                        e.click();
+                        timerId2 = setInterval(function () {
+                            if (!e) {
+                                clearInterval(timerId2);
+                                timerId2 = null;
+                                _this.destruction = false;
+                                GRID = null;
+                            } else {
+                                e.click();
+                            }
+                        }, 20);
                         clearInterval(timerId1);
                         timerId1 = null;
-                        //
-                        e.click();
-                        _this.destruction = false;
-                        // localStorage.setItem(`Lockdown-${name}-${grid.id}`, json);
-                        GRID = null;
-                        console.log(
-                            `%c Lockdown - Grid %c ${name}: ${grid.totalProfit[0]}% : ${grid.totalProfit[1]} `,
-                            "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
-                            "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
-                        );
-                        // reset();
                     }
                 }, 10);
                 clearInterval(timerId);
