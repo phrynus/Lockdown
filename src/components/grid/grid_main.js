@@ -282,6 +282,7 @@ class gridMain {
     }
     // 数据判断
     decisionMaking(grid) {
+        if (_this.destruction) return;
         let _this = this;
         let value = _this.percentStringToDecimal(grid.totalProfit[1]);
         if (value > 0) {
@@ -302,7 +303,7 @@ class gridMain {
         }
     }
     // 结束订单
-    stoporderForm(name, grid, json) {
+    stoporderForm(name, grid) {
         let _this = this;
         let timerId = null;
         let timerId1 = null;
