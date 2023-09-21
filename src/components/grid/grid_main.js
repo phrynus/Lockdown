@@ -334,19 +334,11 @@ class gridMain {
                 timerId = null;
             }
         }, 10);
-        if ((name = "止盈")) {
-            console.log(
-                `%c Lockdown - Grid %c ${name}: ${grid.totalProfit[0]} : ${grid.totalProfit[1]} `,
-                "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
-                "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
-            );
-        } else {
-            console.log(
-                `%c Lockdown - Grid %c ${name}`,
-                "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
-                "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
-            );
-        }
+        console.log(
+            `%c Lockdown - Grid %c ${name}: ${grid.totalProfit[0]} : ${grid.totalProfit[1]} `,
+            "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
+            "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
+        );
     }
     // 后代元素添加属性
     addCustomAttributeToDescendants(element, name, data) {
