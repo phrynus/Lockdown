@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Lockdown - 封锁",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "用于币安合约网格止损",
     "icons": {
         "16": "ico/favicon16X16.ico",
@@ -25,5 +25,5 @@
             "js": ["src/components/grid/grid_main.js"]
         }
     ],
-    "permissions": ["tabs", "scripting", "proxy", "storage", "activeTab"]
+    "permissions": ["scripting", "storage"]
 }

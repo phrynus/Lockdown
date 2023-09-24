@@ -1,5 +1,5 @@
 // 监听延迟
-const DELAY = 100;
+const DELAY = 200;
 var GRID;
 var GRIDtimerId = null;
 var GRIDMonitor = null;
@@ -17,8 +17,8 @@ class gridMain {
     // 网格初始化
     initializeSystem() {
         let _this = this;
-        _this.initializeDate(_.drop(document.querySelectorAll("tbody>tr")));
         GRIDMonitor = null;
+        _this.initializeDate(_.drop(document.querySelectorAll("tbody>tr")));
     }
     // 数据初始化
     initializeDate(elements) {
@@ -200,38 +200,38 @@ class gridMain {
                 (element) => {
                     element.querySelector('.loss input[type="checkbox"]').addEventListener("change", (e) => {
                         grid.lossWitch = e.target.checked;
-                        console.log(grid);
+                        // console.log(grid);
                     });
                     element.querySelector('.loss input[type="text"]').addEventListener("input", (e) => {
                         grid.loss = parseFloat(e.target.value);
-                        console.log(grid);
+                        // console.log(grid);
                     });
                     //
                     element.querySelector('.profit input[type="checkbox"]').addEventListener("change", (e) => {
                         grid.profitWitch = e.target.checked;
-                        console.log(grid);
+                        // console.log(grid);
                     });
                     element.querySelector('.profit input[type="text"]').addEventListener("input", (e) => {
                         grid.profit = parseFloat(e.target.value);
-                        console.log(grid);
+                        // console.log(grid);
                     });
                     //
                     element.querySelector('.profitLoss input[type="checkbox"]').addEventListener("change", (e) => {
                         grid.profitLossWitch = e.target.checked;
-                        console.log(grid);
+                        // console.log(grid);
                     });
                     element.querySelectorAll('.profitLoss input[type="text"]')[0].addEventListener("input", (e) => {
                         grid.profitLoss = parseFloat(e.target.value);
-                        console.log(grid);
+                        // console.log(grid);
                     });
                     element.querySelectorAll('.profitLoss input[type="text"]')[1].addEventListener("input", (e) => {
                         grid.profitLossGoValue = parseFloat(e.target.value);
-                        console.log(grid);
+                        // console.log(grid);
                     });
                 }
             );
             //
-            _this.addCustomAttributeToDescendants(elements[i], "data-row-key", grid.id);
+            // _this.addCustomAttributeToDescendants(elements[i], "data-row-key", grid.id);
             // 第一次判断
             _this.decisionMaking(grid);
         });
@@ -258,9 +258,9 @@ class gridMain {
                         GRIDElength = document.querySelectorAll(".bn-table-tbody>tr").length;
                         GRID = new gridMain();
                     }
-                }, 500);
+                }, 1000);
             }
-        }, 1000);
+        }, 2000);
 
         // console.log(_this.gridDom);
         _this.initializeMonitoring();
@@ -290,7 +290,7 @@ class gridMain {
     decisionMaking(grid) {
         let _this = this;
         if (_this.destruction) return;
-        let value = _this.percentStringToDecimal(grid.totalProfit[1]);
+        let value = parseFloat(grid.totalProfit[1].replace("%", ""));
         if (value > 0) {
             if (grid.profit <= value && grid.profitWitch) {
                 _this.stoporderForm("止盈", grid);
@@ -340,46 +340,38 @@ class gridMain {
                 timerId = null;
             }
         }, 10);
-        if ((name = "止盈")) {
-            console.log(
-                `%c Lockdown - Grid %c ${name}: ${grid.totalProfit[0]}% : ${grid.totalProfit[1]} `,
-                "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
-                "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
-            );
-        } else {
-            console.log(
-                `%c Lockdown - Grid %c ${name}`,
-                "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
-                "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
-            );
-        }
+        console.log(
+            `%c Lockdown - Grid %c ${name}: ${grid.totalProfit[0]}% : ${grid.totalProfit[1]} `,
+            "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
+            "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
+        );
     }
     // 后代元素添加属性
-    addCustomAttributeToDescendants(element, name, data) {
-        // 检查是否有子元素
-        if (element.children.length === 0) {
-            // 没有子元素，不需要递归
-            return;
-        }
-        // 遍历子元素并添加自定义属性
-        for (let i = 0; i < element.children.length; i++) {
-            const childElement = element.children[i];
+    // addCustomAttributeToDescendants(element, name, data) {
+    //     // 检查是否有子元素
+    //     if (element.children.length === 0) {
+    //         // 没有子元素，不需要递归
+    //         return;
+    //     }
+    //     // 遍历子元素并添加自定义属性
+    //     for (let i = 0; i < element.children.length; i++) {
+    //         const childElement = element.children[i];
 
-            // 添加自定义属性 date="0" 到子元素
-            childElement.setAttribute(name, data);
+    //         // 添加自定义属性 date="0" 到子元素
+    //         childElement.setAttribute(name, data);
 
-            // 递归调用函数，处理子元素的后代元素
-            this.addCustomAttributeToDescendants(childElement, name, data);
-        }
-    }
+    //         // 递归调用函数，处理子元素的后代元素
+    //         this.addCustomAttributeToDescendants(childElement, name, data);
+    //     }
+    // }
     // 格式化百分比
-    percentStringToDecimal(percentString) {
-        // 去掉百分号并转换为浮点数
-        let decimal = parseFloat(percentString.replace("%", ""));
-        // 修正类型
-        decimal *= 1;
-        return decimal;
-    }
+    // percentStringToDecimal(percentString) {
+    //     // 去掉百分号并转换为浮点数
+    //     let decimal = parseFloat(percentString.replace("%", ""));
+    //     // 修正类型
+    //     decimal *= 1;
+    //     return parseFloat(percentString.replace("%", ""));
+    // }
     // 动态添加标签
     addHtmlTag(Element, dad, html = "", set = {}, callback) {
         // 创建指定类型的HTML元素
@@ -410,7 +402,7 @@ GRIDtimerId = setInterval(function () {
         GRIDElength = document.querySelectorAll(".bn-table-tbody>tr").length;
         GRID = new gridMain();
     }
-});
+}, 1000);
 // initializeMonitoring() {
 //     let _this = this;
 //     Object.keys(_this.gridDom).forEach((i) => {
