@@ -4,6 +4,9 @@ var GRID;
 var GRIDtimerId = null;
 var GRIDMonitor = null;
 var GRIDElength = null;
+// 定时刷新
+var GRIDRefreshTime = 30 * 60 * 1000; // 30分钟
+var GRIDRefresh = null;
 // 网格主要方法
 class gridMain {
     constructor() {
@@ -393,16 +396,29 @@ class gridMain {
         return create;
     }
 }
+//
+function resetTimer() {
+    clearTimeout(GRIDRefresh);
+    GRIDRefresh = setTimeout(function () {
+        location.reload();
+    }, GRIDRefreshTime);
+}
+
 // GRID = new gridMain();
 GRIDtimerId = setInterval(function () {
     let e = document.querySelector(".bn-table-tbody>tr");
     if (e) {
-        clearInterval(GRIDtimerId); // 停止定时器
+        clearInterval(GRIDtimerId);
         GRIDtimerId = null;
         GRIDElength = document.querySelectorAll(".bn-table-tbody>tr").length;
         GRID = new gridMain();
+        // 定时刷新
+        document.addEventListener("mousemove", resetTimer);
+        document.addEventListener("keypress", resetTimer);
+        resetTimer();
     }
 }, 1000);
+
 // initializeMonitoring() {
 //     let _this = this;
 //     Object.keys(_this.gridDom).forEach((i) => {
