@@ -5,12 +5,13 @@ var GRIDtimerId = null;
 var GRIDMonitor = null;
 var GRIDElength = null;
 // 定时刷新
-var GRIDRefreshTime = 30 * 60 * 1000; // 30分钟
+var GRIDRefreshTime = 15 * 60 * 1000; // 30分钟
 var GRIDRefresh = null;
 
 //
 function resetTimer() {
     clearTimeout(GRIDRefresh);
+    console.log("开始计时");
     GRIDRefresh = setTimeout(function () {
         location.reload();
     }, GRIDRefreshTime);
@@ -61,14 +62,14 @@ class LocalStorageManager {
         const items = {};
 
         for (const key of matchingKeys) {
-            const item = this.getItem(key.replace(this.prefix, ""));
+            const item = this.get(key.replace(this.prefix, ""));
             items[key.replace(this.prefix, "")] = item;
         }
 
         return items == {} ? false : items;
     }
 }
-var Local = new LocalStorageManager("GRID_");
+var Local = new LocalStorageManager("GRID__");
 //
 // 网格主要方法
 class gridMain {
@@ -92,22 +93,22 @@ class gridMain {
         Object.keys(elements).forEach((i) => {
             let gridId = elements[i].dataset.rowKey;
             let LocalGrid = Local.get(gridId);
-            console.log(LocalGrid);
+            // console.log(LocalGrid);
             let grid = {
                 id: gridId,
                 // 止损
-                loss: LocalGrid ? LocalGrid.loss : -3,
+                loss: LocalGrid ? LocalGrid.loss : -1,
                 lossWitch: LocalGrid ? LocalGrid.lossWitch : true,
                 // 止盈
                 profit: LocalGrid ? LocalGrid.profit : 20,
                 profitWitch: LocalGrid ? LocalGrid.profitWitch : false,
                 // 回撤点位
-                profitLoss: LocalGrid ? LocalGrid.profitLoss : 2,
+                profitLoss: LocalGrid ? LocalGrid.profitLoss : 1,
                 profitLossWitch: LocalGrid ? LocalGrid.profitLossWitch : true,
                 // 开始追踪回撤
                 profitLossGo: LocalGrid ? LocalGrid.profitLossGo : false,
                 // 开始追踪回撤值
-                profitLossGoValue: LocalGrid ? LocalGrid.profitLossGoValue : 4,
+                profitLossGoValue: LocalGrid ? LocalGrid.profitLossGoValue : 3,
                 // 最高值
                 profitLossTopValue: LocalGrid ? LocalGrid.profitLossTopValue : 0,
                 // 历史点位
@@ -140,9 +141,7 @@ class gridMain {
             // 合约
             Object.defineProperty(grid, "symbol", {
                 get: function () {
-                    let e = document.querySelector(
-                        `.bn-table tr[data-row-key="${this.id}"] .symbol-shrink .symbol-full-name`
-                    );
+                    let e = document.querySelector(`.bn-table tr[data-row-key="${this.id}"] .symbol-shrink .symbol-full-name`);
                     if (e && !this.destruction) {
                         return e.innerText;
                     } else {
@@ -240,27 +239,17 @@ class gridMain {
                 `
                 <div class="shell">
                     <div class="tabs loss">
-                        <input type="checkbox" ${
-                            grid.lossWitch ? "checked" : ""
-                        }  style="--name: '止损'" name="" id="" />
+                        <input type="checkbox" ${grid.lossWitch ? "checked" : ""}  style="--name: '止损'" name="" id="" />
                         <input type="text" name="" id="" value="${grid.loss}" placeholder="0.00" />
                     </div>
                     <div class="tabs profit">
-                        <input type="checkbox"${
-                            grid.profitWitch ? "checked" : ""
-                        } style="--name: '止盈'" name="" id="" />
+                        <input type="checkbox"${grid.profitWitch ? "checked" : ""} style="--name: '止盈'" name="" id="" />
                         <input type="text" name="" id="" value="${grid.profit}" placeholder="0.00" />
                     </div>
                     <div class="tabs profitLoss" style="width: 160px;">
-                        <input type="checkbox" ${
-                            grid.profitLossWitch ? "checked" : ""
-                        } style="--name: '回撤'" name="" id="" />
-                        <input type="text" name="" id="" value="${
-                            grid.profitLoss
-                        }" placeholder="0.00" style="width: 60px;" />
-                        <input type="text" name="" id="" value="${
-                            grid.profitLossGoValue
-                        }" placeholder="0.00" style="width: 60px;" />
+                        <input type="checkbox" ${grid.profitLossWitch ? "checked" : ""} style="--name: '回撤'" name="" id="" />
+                        <input type="text" name="" id="" value="${grid.profitLoss}" placeholder="0.00" style="width: 60px;" />
+                        <input type="text" name="" id="" value="${grid.profitLossGoValue}" placeholder="0.00" style="width: 60px;" />
                     </div>
                    
                 </div>
@@ -311,6 +300,29 @@ class gridMain {
             // 第一次判断
             _this.decisionMaking(grid);
         });
+        // 
+        let LocalGetAll = Local.getAll()
+        
+        let gridDomIDAll = [];
+        Object.keys(_this.gridDom).forEach((i)=>{
+            gridDomIDAll.push(_this.gridDom[i].id);
+        })
+        Object.keys(LocalGetAll).forEach((e)=>{
+            let a = true
+           
+            for (let j = 0; j < gridDomIDAll.length; j++) {
+                // console.log(e,gridDomIDAll[j])
+                if(e == gridDomIDAll[j]){
+                    a=false
+                }
+            }
+            if(a) {
+                Local.remove(e)
+            }
+            
+        })
+        // console.log(LocalGetAll,gridDomIDAll)
+        
         console.log(
             `%c Lockdown - Grid %c 初始化成功 `,
             "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
@@ -337,7 +349,6 @@ class gridMain {
                 }, 1000);
             }
         }, 2000);
-
         // console.log(_this.gridDom);
         _this.initializeMonitoring();
     }
@@ -372,8 +383,7 @@ class gridMain {
                 _this.stoporderForm("止盈", grid);
             } else if ((value >= grid.profitLossGoValue && grid.profitLossWitch) || grid.profitLossGo) {
                 grid.profitLossGo = true;
-                grid.profitLossTopValue = grid.profitLossTopValue =
-                    0 || grid.profitLossTopValue < value ? value : grid.profitLossTopValue;
+                grid.profitLossTopValue = grid.profitLossTopValue = 0 || grid.profitLossTopValue < value ? value : grid.profitLossTopValue;
                 if (grid.profitLossTopValue - value >= grid.profitLoss) {
                     _this.stoporderForm("追踪止盈", grid);
                 }
