@@ -7,6 +7,69 @@ var GRIDElength = null;
 // 定时刷新
 var GRIDRefreshTime = 30 * 60 * 1000; // 30分钟
 var GRIDRefresh = null;
+
+//
+function resetTimer() {
+    clearTimeout(GRIDRefresh);
+    GRIDRefresh = setTimeout(function () {
+        location.reload();
+    }, GRIDRefreshTime);
+}
+class LocalStorageManager {
+    // 构造函数，接受一个前缀，以防止不同应用之间的键名冲突
+    constructor(prefix = "") {
+        this.prefix = prefix;
+    }
+
+    // 添加对象到本地存储
+    add(key, value) {
+        try {
+            const serializedValue = JSON.stringify(value);
+            localStorage.setItem(this.prefix + key, serializedValue);
+        } catch (error) {
+            console.error("存储对象时出错：", error);
+        }
+    }
+
+    // 从本地存储获取对象，如果获取失败则返回空对象
+    get(key) {
+        try {
+            const serializedValue = localStorage.getItem(this.prefix + key);
+            if (serializedValue === null) {
+                return false;
+            }
+            return JSON.parse(serializedValue);
+        } catch (error) {
+            console.error("检索对象时出错：", error);
+            return false;
+        }
+    }
+
+    // 从本地存储中删除对象
+    remove(key) {
+        try {
+            localStorage.removeItem(this.prefix + key);
+        } catch (error) {
+            console.error("删除对象时出错：", error);
+        }
+    }
+
+    // 获取以指定前缀开头的所有数据项
+    getAll() {
+        const allKeys = Object.keys(localStorage);
+        const matchingKeys = allKeys.filter((key) => key.startsWith(this.prefix));
+        const items = {};
+
+        for (const key of matchingKeys) {
+            const item = this.getItem(key.replace(this.prefix, ""));
+            items[key.replace(this.prefix, "")] = item;
+        }
+
+        return items == {} ? false : items;
+    }
+}
+var Local = new LocalStorageManager("GRID_");
+//
 // 网格主要方法
 class gridMain {
     constructor() {
@@ -27,23 +90,26 @@ class gridMain {
     initializeDate(elements) {
         let _this = this;
         Object.keys(elements).forEach((i) => {
+            let gridId = elements[i].dataset.rowKey;
+            let LocalGrid = Local.get(gridId);
+            console.log(LocalGrid);
             let grid = {
-                id: null,
+                id: gridId,
                 // 止损
-                loss: -3.0,
-                lossWitch: true,
+                loss: LocalGrid ? LocalGrid.loss : -3,
+                lossWitch: LocalGrid ? LocalGrid.lossWitch : true,
                 // 止盈
-                profit: 20.0,
-                profitWitch: true,
+                profit: LocalGrid ? LocalGrid.profit : 20,
+                profitWitch: LocalGrid ? LocalGrid.profitWitch : false,
                 // 回撤点位
-                profitLoss: 2.0,
-                profitLossWitch: true,
+                profitLoss: LocalGrid ? LocalGrid.profitLoss : 2,
+                profitLossWitch: LocalGrid ? LocalGrid.profitLossWitch : true,
                 // 开始追踪回撤
-                profitLossGo: false,
+                profitLossGo: LocalGrid ? LocalGrid.profitLossGo : false,
                 // 开始追踪回撤值
-                profitLossGoValue: 4.0,
+                profitLossGoValue: LocalGrid ? LocalGrid.profitLossGoValue : 4,
                 // 最高值
-                profitLossTopValue: 0.0,
+                profitLossTopValue: LocalGrid ? LocalGrid.profitLossTopValue : 0,
                 // 历史点位
                 historicalPoints: [],
                 // json数据记录
@@ -56,7 +122,7 @@ class gridMain {
                 // unmatchedProfit,
                 // totalMatchedTrades
             };
-            grid.id = elements[i].dataset.rowKey;
+            Local.add(grid.id, grid);
             // 开始时间
             Object.defineProperty(grid, "time", {
                 get: function () {
@@ -174,21 +240,21 @@ class gridMain {
                 `
                 <div class="shell">
                     <div class="tabs loss">
-                        <input type="checkbox" checked="${
+                        <input type="checkbox" ${
                             grid.lossWitch ? "checked" : ""
-                        }"  style="--name: '止损'" name="" id="" />
+                        }  style="--name: '止损'" name="" id="" />
                         <input type="text" name="" id="" value="${grid.loss}" placeholder="0.00" />
                     </div>
                     <div class="tabs profit">
-                        <input type="checkbox" checked="${
+                        <input type="checkbox"${
                             grid.profitWitch ? "checked" : ""
-                        }" style="--name: '止盈'" name="" id="" />
+                        } style="--name: '止盈'" name="" id="" />
                         <input type="text" name="" id="" value="${grid.profit}" placeholder="0.00" />
                     </div>
                     <div class="tabs profitLoss" style="width: 160px;">
-                        <input type="checkbox" checked="${
+                        <input type="checkbox" ${
                             grid.profitLossWitch ? "checked" : ""
-                        }" style="--name: '回撤'" name="" id="" />
+                        } style="--name: '回撤'" name="" id="" />
                         <input type="text" name="" id="" value="${
                             grid.profitLoss
                         }" placeholder="0.00" style="width: 60px;" />
@@ -203,32 +269,39 @@ class gridMain {
                 (element) => {
                     element.querySelector('.loss input[type="checkbox"]').addEventListener("change", (e) => {
                         grid.lossWitch = e.target.checked;
+                        Local.add(grid.id, grid);
                         // console.log(grid);
                     });
                     element.querySelector('.loss input[type="text"]').addEventListener("input", (e) => {
                         grid.loss = parseFloat(e.target.value);
+                        Local.add(grid.id, grid);
                         // console.log(grid);
                     });
                     //
                     element.querySelector('.profit input[type="checkbox"]').addEventListener("change", (e) => {
                         grid.profitWitch = e.target.checked;
+                        Local.add(grid.id, grid);
                         // console.log(grid);
                     });
                     element.querySelector('.profit input[type="text"]').addEventListener("input", (e) => {
                         grid.profit = parseFloat(e.target.value);
+                        Local.add(grid.id, grid);
                         // console.log(grid);
                     });
                     //
                     element.querySelector('.profitLoss input[type="checkbox"]').addEventListener("change", (e) => {
                         grid.profitLossWitch = e.target.checked;
+                        Local.add(grid.id, grid);
                         // console.log(grid);
                     });
                     element.querySelectorAll('.profitLoss input[type="text"]')[0].addEventListener("input", (e) => {
                         grid.profitLoss = parseFloat(e.target.value);
+                        Local.add(grid.id, grid);
                         // console.log(grid);
                     });
                     element.querySelectorAll('.profitLoss input[type="text"]')[1].addEventListener("input", (e) => {
                         grid.profitLossGoValue = parseFloat(e.target.value);
+                        Local.add(grid.id, grid);
                         // console.log(grid);
                     });
                 }
@@ -349,32 +422,6 @@ class gridMain {
             "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
         );
     }
-    // 后代元素添加属性
-    // addCustomAttributeToDescendants(element, name, data) {
-    //     // 检查是否有子元素
-    //     if (element.children.length === 0) {
-    //         // 没有子元素，不需要递归
-    //         return;
-    //     }
-    //     // 遍历子元素并添加自定义属性
-    //     for (let i = 0; i < element.children.length; i++) {
-    //         const childElement = element.children[i];
-
-    //         // 添加自定义属性 date="0" 到子元素
-    //         childElement.setAttribute(name, data);
-
-    //         // 递归调用函数，处理子元素的后代元素
-    //         this.addCustomAttributeToDescendants(childElement, name, data);
-    //     }
-    // }
-    // 格式化百分比
-    // percentStringToDecimal(percentString) {
-    //     // 去掉百分号并转换为浮点数
-    //     let decimal = parseFloat(percentString.replace("%", ""));
-    //     // 修正类型
-    //     decimal *= 1;
-    //     return parseFloat(percentString.replace("%", ""));
-    // }
     // 动态添加标签
     addHtmlTag(Element, dad, html = "", set = {}, callback) {
         // 创建指定类型的HTML元素
@@ -396,14 +443,15 @@ class gridMain {
         return create;
     }
 }
+// 添加
+// Local.add('userData', {name:"12"});
+// // 获取
+// Local.get('userData');
+// // 删除对象
+// Local.remove('userData');
+// // 取全部
+// Local.getAll();
 //
-function resetTimer() {
-    clearTimeout(GRIDRefresh);
-    GRIDRefresh = setTimeout(function () {
-        location.reload();
-    }, GRIDRefreshTime);
-}
-
 // GRID = new gridMain();
 GRIDtimerId = setInterval(function () {
     let e = document.querySelector(".bn-table-tbody>tr");
