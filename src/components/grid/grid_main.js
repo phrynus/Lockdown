@@ -7,11 +7,22 @@ var GRIDElength = null;
 // 定时刷新
 var GRIDRefreshTime = 15 * 60 * 1000; // 30分钟
 var GRIDRefresh = null;
-
+// 
+function debounce(fn, wait) {
+    let timeout;
+    return function() {
+      let that = this;
+      let arg = arguments;
+      clearTimeout(timeout);
+      timeout = setTimeout(function(){
+        timeout = null;
+        fn.apply(that,arg)//使用apply改变this指向
+      }, wait);
+    }
+  }
 //
 function resetTimer() {
     clearTimeout(GRIDRefresh);
-    console.log("开始计时");
     GRIDRefresh = setTimeout(function () {
         location.reload();
     }, GRIDRefreshTime);
@@ -471,8 +482,8 @@ GRIDtimerId = setInterval(function () {
         GRIDElength = document.querySelectorAll(".bn-table-tbody>tr").length;
         GRID = new gridMain();
         // 定时刷新
-        document.addEventListener("mousemove", resetTimer);
-        document.addEventListener("keypress", resetTimer);
+        document.addEventListener("mousemove", debounce(resetTimer,1000));
+        document.addEventListener("keypress", debounce(resetTimer,1000));
         resetTimer();
     }
 }, 1000);
