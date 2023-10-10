@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
     "name": "Lockdown - 封锁",
-    "version": "1.1.0",
-    "description": "用于币安合约网格止损",
+    "version": "1.2.0",
+    "description": "用于合约网格止损",
     "icons": {
         "16": "ico/favicon16X16.ico",
         "32": "ico/favicon32X32.ico",
@@ -12,18 +12,20 @@
     },
     "content_scripts": [
         {
-            "matches": ["https://www.binance.com/*"],
-            "js": ["src/main.js", "src/common/lodash.min.js", "src/common/ContentChangeMonitor.js"],
-            "run_at": "document_start"
+            "matches": ["https://www.binance.com/*/trading-bots/futures/grid/*"],
+            "css": ["src/components/BinanceGrid/grid_style.min.css"]
         },
         {
             "matches": ["https://www.binance.com/*/trading-bots/futures/grid/*"],
-            "css": ["src/components/grid/grid_style.min.css"]
+            "js": ["src/components/BinanceGrid/grid_main.js"]
         },
         {
-            "matches": ["https://www.binance.com/*/trading-bots/futures/grid/*"],
-            "js": ["src/components/grid/grid_main.js"]
+            "matches": ["https://www.bitget.com/*/trading-bot/futures/*"],
+            "css": ["src/components/BitcoinGrid/grid_style.min.css"]
+        },
+        {
+            "matches": ["https://www.bitget.com/*/trading-bot/futures/*"],
+            "js": ["src/components/BitcoinGrid/grid_main.js"]
         }
-    ],
-    "permissions": ["tabs"]
+    ]
 }

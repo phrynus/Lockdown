@@ -5,21 +5,28 @@ var GRIDtimerId = null;
 var GRIDMonitor = null;
 var GRIDElength = null;
 // 定时刷新
-var GRIDRefreshTime = 15 * 60 * 1000; // 30分钟
+var GRIDRefreshTime = 15 * 60 * 1000; // 15分钟
 var GRIDRefresh = null;
-// 
+//
+function drop(elements, n = 1) {
+    if (elements.length <= 1) {
+        return [];
+    }
+    return Array.prototype.slice.call(elements, n).map((element) => element);
+}
+//
 function debounce(fn, wait) {
     let timeout;
-    return function() {
-      let that = this;
-      let arg = arguments;
-      clearTimeout(timeout);
-      timeout = setTimeout(function(){
-        timeout = null;
-        fn.apply(that,arg)//使用apply改变this指向
-      }, wait);
-    }
-  }
+    return function () {
+        let that = this;
+        let arg = arguments;
+        clearTimeout(timeout);
+        timeout = setTimeout(function () {
+            timeout = null;
+            fn.apply(that, arg); //使用apply改变this指向
+        }, wait);
+    };
+}
 //
 function resetTimer() {
     clearTimeout(GRIDRefresh);
@@ -81,6 +88,26 @@ class LocalStorageManager {
     }
 }
 var Local = new LocalStorageManager("GRID__");
+// 
+function  addHtmlTag(Element, dad, html = "", set = {}, callback) {
+    // 创建指定类型的HTML元素
+    let create = document.createElement(Element);
+    // 将HTML内容添加到元素中
+    create.innerHTML = html;
+    // 添加元素的属性和属性值
+    for (let key in set) create.setAttribute(key, set[key]);
+    // 判断父元素类型是DOM节点还是CSS选择器
+    if (typeof dad == "object") {
+        // 如果是DOM节点，则直接将创建的元素添加到该节点中
+        dad.appendChild(create);
+    } else if (typeof dad == "string") {
+        // 如果是CSS选择器，则先获取匹配的第一个DOM节点，再将元素添加到该节点中
+        document.querySelector(dad).appendChild(create);
+    }
+    // 返回创建的元素
+    callback(create);
+    return create;
+}
 //
 // 网格主要方法
 class gridMain {
@@ -96,11 +123,12 @@ class gridMain {
     initializeSystem() {
         let _this = this;
         GRIDMonitor = null;
-        _this.initializeDate(_.drop(document.querySelectorAll("tbody>tr")));
+        _this.initializeDate(drop(document.querySelectorAll("tbody>tr")));
     }
     // 数据初始化
     initializeDate(elements) {
         let _this = this;
+        console.log(elements);
         Object.keys(elements).forEach((i) => {
             let gridId = elements[i].dataset.rowKey;
             let LocalGrid = Local.get(gridId);
@@ -108,13 +136,13 @@ class gridMain {
             let grid = {
                 id: gridId,
                 // 止损
-                loss: LocalGrid ? LocalGrid.loss : -1,
+                loss: LocalGrid ? LocalGrid.loss : -3,
                 lossWitch: LocalGrid ? LocalGrid.lossWitch : true,
                 // 止盈
                 profit: LocalGrid ? LocalGrid.profit : 20,
-                profitWitch: LocalGrid ? LocalGrid.profitWitch : false,
+                profitWitch: LocalGrid ? LocalGrid.profitWitch : true,
                 // 回撤点位
-                profitLoss: LocalGrid ? LocalGrid.profitLoss : 1,
+                profitLoss: LocalGrid ? LocalGrid.profitLoss : 2,
                 profitLossWitch: LocalGrid ? LocalGrid.profitLossWitch : true,
                 // 开始追踪回撤
                 profitLossGo: LocalGrid ? LocalGrid.profitLossGo : false,
@@ -135,50 +163,52 @@ class gridMain {
                 // totalMatchedTrades
             };
             Local.add(grid.id, grid);
-            // 开始时间
-            Object.defineProperty(grid, "time", {
-                get: function () {
-                    let e = document.querySelector(`.bn-table tr[data-row-key="${this.id}"] .css-vurnku`);
-                    if (e && !this.destruction) {
-                        return e.innerText.replace(/\n/g, " ");
-                    } else {
-                        // 销毁
-                        this.destruction = true;
-                        // reset();
-                        return "数据有误";
-                    }
-                }
-            });
-            // 合约
-            Object.defineProperty(grid, "symbol", {
-                get: function () {
-                    let e = document.querySelector(`.bn-table tr[data-row-key="${this.id}"] .symbol-shrink .symbol-full-name`);
-                    if (e && !this.destruction) {
-                        return e.innerText;
-                    } else {
-                        // 销毁
-                        this.destruction = true;
-                        // 重置
-                        // reset();
-                        return "数据有误";
-                    }
-                }
-            });
-            // 方向
-            Object.defineProperty(grid, "direction", {
-                get: function () {
-                    let e = document.querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[3];
-                    if (e && !this.destruction) {
-                        return e.innerText;
-                    } else {
-                        // 销毁
-                        this.destruction = true;
-                        // 重置
-                        // reset();
-                        return "数据有误";
-                    }
-                }
-            });
+            // // 开始时间
+            // Object.defineProperty(grid, "time", {
+            //     get: function () {
+            //         let e = document.querySelector(`.bn-table tr[data-row-key="${this.id}"] .css-vurnku`);
+            //         if (e && !this.destruction) {
+            //             return e.innerText.replace(/\n/g, " ");
+            //         } else {
+            //             // 销毁
+            //             this.destruction = true;
+            //             // reset();
+            //             return "数据有误";
+            //         }
+            //     }
+            // });
+            // // 合约
+            // Object.defineProperty(grid, "symbol", {
+            //     get: function () {
+            //         let e = document.querySelector(
+            //             `.bn-table tr[data-row-key="${this.id}"] .symbol-shrink .symbol-full-name`
+            //         );
+            //         if (e && !this.destruction) {
+            //             return e.innerText;
+            //         } else {
+            //             // 销毁
+            //             this.destruction = true;
+            //             // 重置
+            //             // reset();
+            //             return "数据有误";
+            //         }
+            //     }
+            // });
+            // // 方向
+            // Object.defineProperty(grid, "direction", {
+            //     get: function () {
+            //         let e = document.querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[3];
+            //         if (e && !this.destruction) {
+            //             return e.innerText;
+            //         } else {
+            //             // 销毁
+            //             this.destruction = true;
+            //             // 重置
+            //             // reset();
+            //             return "数据有误";
+            //         }
+            //     }
+            // });
             // 总收益
             Object.defineProperty(grid, "totalProfit", {
                 get: function () {
@@ -194,73 +224,83 @@ class gridMain {
                     }
                 }
             });
-            // 已匹配利润
-            Object.defineProperty(grid, "matchedProfit", {
-                get: function () {
-                    let e = document.querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[6];
+            // // 已匹配利润
+            // Object.defineProperty(grid, "matchedProfit", {
+            //     get: function () {
+            //         let e = document.querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[6];
 
-                    if (e && !this.destruction) {
-                        return [e.querySelectorAll("span")[0].innerText, e.querySelectorAll("span")[1].innerText];
-                    } else {
-                        // 销毁
-                        this.destruction = true;
-                        // 重置
-                        // reset();
-                        return "数据有误";
-                    }
-                }
-            });
-            // 未匹配利润
-            Object.defineProperty(grid, "unmatchedProfit", {
-                get: function () {
-                    let e = document.querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[7];
+            //         if (e && !this.destruction) {
+            //             return [e.querySelectorAll("span")[0].innerText, e.querySelectorAll("span")[1].innerText];
+            //         } else {
+            //             // 销毁
+            //             this.destruction = true;
+            //             // 重置
+            //             // reset();
+            //             return "数据有误";
+            //         }
+            //     }
+            // });
+            // // 未匹配利润
+            // Object.defineProperty(grid, "unmatchedProfit", {
+            //     get: function () {
+            //         let e = document.querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[7];
 
-                    if (e && !this.destruction) {
-                        return [e.querySelectorAll("span")[0].innerText, e.querySelectorAll("span")[1].innerText];
-                    } else {
-                        // 销毁
-                        this.destruction = true;
-                        // 重置
-                        // reset();
-                        return "数据有误";
-                    }
-                }
-            });
-            // 配对次数
-            Object.defineProperty(grid, "totalMatchedTrades", {
-                get: function () {
-                    let e = document.querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[8];
-                    if (e && !this.destruction) {
-                        return e.innerText;
-                    } else {
-                        // 销毁
-                        this.destruction = true;
-                        // 重置
-                        // reset();
-                        return "数据有误";
-                    }
-                }
-            });
+            //         if (e && !this.destruction) {
+            //             return [e.querySelectorAll("span")[0].innerText, e.querySelectorAll("span")[1].innerText];
+            //         } else {
+            //             // 销毁
+            //             this.destruction = true;
+            //             // 重置
+            //             // reset();
+            //             return "数据有误";
+            //         }
+            //     }
+            // });
+            // // 配对次数
+            // Object.defineProperty(grid, "totalMatchedTrades", {
+            //     get: function () {
+            //         let e = document.querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[8];
+            //         if (e && !this.destruction) {
+            //             return e.innerText;
+            //         } else {
+            //             // 销毁
+            //             this.destruction = true;
+            //             // 重置
+            //             // reset();
+            //             return "数据有误";
+            //         }
+            //     }
+            // });
             _this.gridDom.push(grid);
             //
             let td = document.querySelector(`tbody>tr[data-row-key="${grid.id}"]`).querySelector("td:last-child");
-            _this.addHtmlTag(
+            addHtmlTag(
                 "div",
                 td,
                 `
                 <div class="shell">
                     <div class="tabs loss">
-                        <input type="checkbox" ${grid.lossWitch ? "checked" : ""}  style="--name: '止损'" name="" id="" />
+                        <input type="checkbox" ${
+                            grid.lossWitch ? "checked" : ""
+                        }  style="--name: '止损'" name="" id="" />
                         <input type="text" name="" id="" value="${grid.loss}" placeholder="0.00" />
                     </div>
                     <div class="tabs profit">
-                        <input type="checkbox"${grid.profitWitch ? "checked" : ""} style="--name: '止盈'" name="" id="" />
+                        <input type="checkbox"${
+                            grid.profitWitch ? "checked" : ""
+                        } style="--name: '止盈'" name="" id="" />
                         <input type="text" name="" id="" value="${grid.profit}" placeholder="0.00" />
                     </div>
                     <div class="tabs profitLoss" style="width: 160px;">
-                        <input type="checkbox" ${grid.profitLossWitch ? "checked" : ""} style="--name: '回撤'" name="" id="" />
-                        <input type="text" name="" id="" value="${grid.profitLoss}" placeholder="0.00" style="width: 60px;" />
-                        <input type="text" name="" id="" value="${grid.profitLossGoValue}" placeholder="0.00" style="width: 60px;" />
+                        <input type="checkbox" ${
+                            grid.profitLossWitch ? "checked" : ""
+                        } style="--name: '回撤'" name="" id="" />
+                        <input type="text" name="" id="" value="${
+                            grid.profitLoss
+                        }" placeholder="0.00" style="width: 60px;" />
+                        <input type="text" name="" id="" value="${
+                            grid.profitLossGoValue
+                        }" placeholder="0.00" style="width: 60px;" />
                     </div>
                    
                 </div>
@@ -311,29 +351,28 @@ class gridMain {
             // 第一次判断
             _this.decisionMaking(grid);
         });
-        // 
-        let LocalGetAll = Local.getAll()
-        
+        //
+        let LocalGetAll = Local.getAll();
+
         let gridDomIDAll = [];
-        Object.keys(_this.gridDom).forEach((i)=>{
+        Object.keys(_this.gridDom).forEach((i) => {
             gridDomIDAll.push(_this.gridDom[i].id);
-        })
-        Object.keys(LocalGetAll).forEach((e)=>{
-            let a = true
-           
+        });
+        Object.keys(LocalGetAll).forEach((e) => {
+            let a = true;
+
             for (let j = 0; j < gridDomIDAll.length; j++) {
                 // console.log(e,gridDomIDAll[j])
-                if(e == gridDomIDAll[j]){
-                    a=false
+                if (e == gridDomIDAll[j]) {
+                    a = false;
                 }
             }
-            if(a) {
-                Local.remove(e)
+            if (a) {
+                Local.remove(e);
             }
-            
-        })
+        });
         // console.log(LocalGetAll,gridDomIDAll)
-        
+
         console.log(
             `%c Lockdown - Grid %c 初始化成功 `,
             "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
@@ -394,7 +433,8 @@ class gridMain {
                 _this.stoporderForm("止盈", grid);
             } else if ((value >= grid.profitLossGoValue && grid.profitLossWitch) || grid.profitLossGo) {
                 grid.profitLossGo = true;
-                grid.profitLossTopValue = grid.profitLossTopValue = 0 || grid.profitLossTopValue < value ? value : grid.profitLossTopValue;
+                grid.profitLossTopValue = grid.profitLossTopValue =
+                    0 || grid.profitLossTopValue < value ? value : grid.profitLossTopValue;
                 if (grid.profitLossTopValue - value >= grid.profitLoss) {
                     _this.stoporderForm("追踪止盈", grid);
                 }
@@ -444,25 +484,7 @@ class gridMain {
         );
     }
     // 动态添加标签
-    addHtmlTag(Element, dad, html = "", set = {}, callback) {
-        // 创建指定类型的HTML元素
-        let create = document.createElement(Element);
-        // 将HTML内容添加到元素中
-        create.innerHTML = html;
-        // 添加元素的属性和属性值
-        for (let key in set) create.setAttribute(key, set[key]);
-        // 判断父元素类型是DOM节点还是CSS选择器
-        if (typeof dad == "object") {
-            // 如果是DOM节点，则直接将创建的元素添加到该节点中
-            dad.appendChild(create);
-        } else if (typeof dad == "string") {
-            // 如果是CSS选择器，则先获取匹配的第一个DOM节点，再将元素添加到该节点中
-            document.querySelector(dad).appendChild(create);
-        }
-        // 返回创建的元素
-        callback(create);
-        return create;
-    }
+   
 }
 // 添加
 // Local.add('userData', {name:"12"});
@@ -474,6 +496,41 @@ class gridMain {
 // Local.getAll();
 //
 // GRID = new gridMain();
+async function generateSHA256() {
+    // 创建一个新的canvas元素
+    const outScreenCanvas = document.createElement("canvas");
+    outScreenCanvas.width = 250; // 设置canvas宽度
+    outScreenCanvas.height = 20; // 设置canvas高度
+
+    // 在canvas上绘制文本
+    const ctx = outScreenCanvas.getContext("2d");
+    ctx.font = "14px Arial";
+    ctx.fillStyle = "#f60";
+    ctx.fillRect(125, 1, 62, 20);
+    ctx.fillStyle = "#069";
+    ctx.fillText("<canvas>", 2, 15);
+    ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+    ctx.fillText("<canvas>", 4, 17);
+
+    // 计算SHA-256哈希值并返回
+    return await sha256(outScreenCanvas.toDataURL());
+}
+
+async function sha256(str) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map((byte) => byte.toString(16).padStart(2, "0")).join("");
+    return hashHex;
+}
+
+(async () => {
+    const hashValue = await generateSHA256();
+    // prompt('复制机器码给开发人员', hashValue);
+    
+})();
+// 
 GRIDtimerId = setInterval(function () {
     let e = document.querySelector(".bn-table-tbody>tr");
     if (e) {
@@ -482,8 +539,8 @@ GRIDtimerId = setInterval(function () {
         GRIDElength = document.querySelectorAll(".bn-table-tbody>tr").length;
         GRID = new gridMain();
         // 定时刷新
-        document.addEventListener("mousemove", debounce(resetTimer,1000));
-        document.addEventListener("keypress", debounce(resetTimer,1000));
+        document.addEventListener("mousemove", debounce(resetTimer, 1000));
+        document.addEventListener("keypress", debounce(resetTimer, 1000));
         resetTimer();
     }
 }, 1000);

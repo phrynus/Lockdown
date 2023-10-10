@@ -1,0 +1,74 @@
+.flex-wrap.items-stretch > div {
+  position: relative;
+}
+.flex-wrap.items-stretch > div:hover .Lockdown_grid_menu {
+  display: block;
+  right: 100%;
+}
+.flex-wrap.items-stretch > div .Lockdown_grid_menu {
+  margin: 0;
+  padding: 0;
+  position: relative;
+  bottom: 89px;
+  left: 17px;
+  transition: 0.5s;
+  width: calc(100% - 34px);
+}
+.flex-wrap.items-stretch > div .Lockdown_grid_menu .shell {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.flex-wrap.items-stretch > div .Lockdown_grid_menu .shell .tabs {
+  display: flex;
+  height: 26px;
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  width: 27.3%;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.flex-wrap.items-stretch > div .Lockdown_grid_menu .shell .tabs input[type=checkbox] {
+  width: 40%;
+  height: 100%;
+  position: relative;
+}
+.flex-wrap.items-stretch > div .Lockdown_grid_menu .shell .tabs input[type=checkbox]:checked::after {
+  background-color: #1e90ff;
+}
+.flex-wrap.items-stretch > div .Lockdown_grid_menu .shell .tabs input[type=checkbox]::after {
+  content: var(--name);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 105%;
+  text-align: center;
+  line-height: 26px;
+  background-color: #f39c12;
+  font-weight: bold;
+  font-size: 12px;
+  color: #fff;
+  cursor: pointer;
+}
+.flex-wrap.items-stretch > div .Lockdown_grid_menu .shell .tabs input[type=text] {
+  width: 65%;
+  border-radius: 0;
+  border: 0;
+  border-left: 1px solid #999;
+  height: 100%;
+  padding: 0 6px;
+  background-color: rgba(0, 0, 0, 0);
+  margin: 0;
+  box-sizing: border-box;
+  outline: none;
+  text-align: center;
+}
+
+.flex.flex-wrap.items-stretch > div {
+  width: 49%;
+}
