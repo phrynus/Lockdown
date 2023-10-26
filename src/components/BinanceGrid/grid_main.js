@@ -5,7 +5,7 @@ var GRIDtimerId = null;
 var GRIDMonitor = null;
 var GRIDElength = null;
 // 定时刷新
-var GRIDRefreshTime = 15 * 60 * 1000; // 15分钟
+var GRIDRefreshTime = 30 * 60 * 1000; // 30分钟
 var GRIDRefresh = null;
 //
 function drop(elements, n = 1) {
@@ -88,8 +88,9 @@ class LocalStorageManager {
     }
 }
 var Local = new LocalStorageManager("GRID__");
-// 
-function  addHtmlTag(Element, dad, html = "", set = {}, callback) {
+var LocalValidate = new LocalStorageManager("GRID_validate_");
+//
+function addHtmlTag(Element, dad, html = "", set = {}, callback) {
     // 创建指定类型的HTML元素
     let create = document.createElement(Element);
     // 将HTML内容添加到元素中
@@ -107,6 +108,152 @@ function  addHtmlTag(Element, dad, html = "", set = {}, callback) {
     // 返回创建的元素
     callback(create);
     return create;
+}
+async function generateSHA256() {
+    // 创建一个新的canvas元素
+    const outScreenCanvas = document.createElement("canvas");
+    outScreenCanvas.width = 250; // 设置canvas宽度
+    outScreenCanvas.height = 20; // 设置canvas高度
+
+    // 在canvas上绘制文本
+    const ctx = outScreenCanvas.getContext("2d");
+    ctx.font = "14px Arial";
+    ctx.fillStyle = "#f60";
+    ctx.fillRect(125, 1, 62, 20);
+    ctx.fillStyle = "#069";
+    ctx.fillText("<canvas>", 2, 15);
+    ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+    ctx.fillText("<canvas>", 4, 17);
+
+    // 计算SHA-256哈希值并返回
+    return await sha256(outScreenCanvas.toDataURL());
+}
+
+async function sha256(str) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map((byte) => byte.toString(16).padStart(2, "0")).join("");
+    return hashHex;
+}
+function decrypt(key, encryptedData) {
+    // Base64解码
+
+    try {
+        var decodedData = atob(encryptedData);
+
+        // 第三层解密：恢复原序
+        let decryptedData = decodedData.split("").reverse().join("");
+
+        // 第二层解密：使用XOR操作
+        const keyBytes = key.split("").map((char) => char.charCodeAt(0));
+        decryptedData = decryptedData
+            .split("")
+            .map((char, index) => String.fromCharCode(char.charCodeAt(0) ^ keyBytes[index % keyBytes.length]))
+            .join("");
+
+        // 第一层解密：还原字符
+        decryptedData = decryptedData
+            .split("")
+            .map((char) => String.fromCharCode(char.charCodeAt(0) - 1))
+            .join("");
+
+        // 从解密后的数据中去除密钥
+        decryptedData = decryptedData.substring(key.length);
+
+        return decryptedData;
+    } catch (error) {
+        console.error("解码错误：" + error.message);
+        return false;
+    }
+}
+function timestampToDateTime(timestamp) {
+    const date = new Date(new Number(timestamp));
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // 月份从0开始，所以要加1
+    const day = date.getDate().toString().padStart(2, "0");
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const seconds = date.getSeconds().toString().padStart(2, "0");
+    const formattedDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+    return formattedDateTime;
+}
+async function ini() {
+    let LocalhashValue = LocalValidate.get("LocalhashValue");
+    let hashValue = await generateSHA256();
+    if (LocalhashValue) {
+        validate(hashValue, LocalhashValue);
+    } else {
+        addHtmlTag(
+            "div",
+            "body",
+            `
+            <div class="bg"></div>
+        <div class="box">
+            <div class="content">
+                <div class="text">
+                    <h3>机器码<span>把机器码复制给开发人员</span></h3>
+                    <p>${hashValue}</p>
+                </div>
+                <div class="key">
+                    <h3>密钥 <span>开发者提供的密钥复制到下方</span></h3>
+                    <input type="text" />
+                </div>
+            </div>
+            <div class="btn">
+                <button class="red">取消</button>
+                <button class="yes">确认</button>
+            </div>
+        </div>
+        `,
+            { id: "GRID_inputBox" },
+            (element) => {
+                element.querySelector(".yes").addEventListener("click", (e) => {
+                    let promptdata = element.querySelector("input").value;
+                    validate(hashValue, promptdata);
+                    element.remove();
+                });
+                element.querySelector(".red").addEventListener("click", (e) => {
+                    element.remove();
+                });
+            }
+        );
+    }
+}
+function validate(hash, key) {
+    let decrypted = decrypt(hash, key);
+    let currentTime = new Date().getTime();
+    if (currentTime < decrypted) {
+        LocalValidate.add("LocalhashValue", key);
+        GRIDtimerId = setInterval(function () {
+            let e = document.querySelector(".bn-table-tbody>tr");
+            if (e) {
+                clearInterval(GRIDtimerId);
+                GRIDtimerId = null;
+                GRIDElength = document.querySelectorAll(".bn-table-tbody>tr").length;
+                GRID = new gridMain();
+                // 定时刷新
+                document.addEventListener("mousemove", debounce(resetTimer, 1000));
+                document.addEventListener("keypress", debounce(resetTimer, 1000));
+                resetTimer();
+            }
+        }, 1000);
+        console.log(
+            `%c Lockdown - Grid %c 到期时间： ${timestampToDateTime(decrypted)}`,
+            "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
+            "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
+        );
+    } else {
+        LocalValidate.remove("LocalhashValue");
+        console.log(
+            `%c Lockdown - Grid %c 过期或错误`,
+            "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
+            "background: #e74c3c; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
+        );
+        ini();
+    }
 }
 //
 // 网格主要方法
@@ -154,61 +301,8 @@ class gridMain {
                 historicalPoints: [],
                 // json数据记录
                 json: ""
-                // time,
-                // symbol,
-                // direction,
-                // totalProfit,
-                // matchedProfit,
-                // unmatchedProfit,
-                // totalMatchedTrades
             };
             Local.add(grid.id, grid);
-            // // 开始时间
-            // Object.defineProperty(grid, "time", {
-            //     get: function () {
-            //         let e = document.querySelector(`.bn-table tr[data-row-key="${this.id}"] .css-vurnku`);
-            //         if (e && !this.destruction) {
-            //             return e.innerText.replace(/\n/g, " ");
-            //         } else {
-            //             // 销毁
-            //             this.destruction = true;
-            //             // reset();
-            //             return "数据有误";
-            //         }
-            //     }
-            // });
-            // // 合约
-            // Object.defineProperty(grid, "symbol", {
-            //     get: function () {
-            //         let e = document.querySelector(
-            //             `.bn-table tr[data-row-key="${this.id}"] .symbol-shrink .symbol-full-name`
-            //         );
-            //         if (e && !this.destruction) {
-            //             return e.innerText;
-            //         } else {
-            //             // 销毁
-            //             this.destruction = true;
-            //             // 重置
-            //             // reset();
-            //             return "数据有误";
-            //         }
-            //     }
-            // });
-            // // 方向
-            // Object.defineProperty(grid, "direction", {
-            //     get: function () {
-            //         let e = document.querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[3];
-            //         if (e && !this.destruction) {
-            //             return e.innerText;
-            //         } else {
-            //             // 销毁
-            //             this.destruction = true;
-            //             // 重置
-            //             // reset();
-            //             return "数据有误";
-            //         }
-            //     }
-            // });
             // 总收益
             Object.defineProperty(grid, "totalProfit", {
                 get: function () {
@@ -224,53 +318,7 @@ class gridMain {
                     }
                 }
             });
-            // // 已匹配利润
-            // Object.defineProperty(grid, "matchedProfit", {
-            //     get: function () {
-            //         let e = document.querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[6];
 
-            //         if (e && !this.destruction) {
-            //             return [e.querySelectorAll("span")[0].innerText, e.querySelectorAll("span")[1].innerText];
-            //         } else {
-            //             // 销毁
-            //             this.destruction = true;
-            //             // 重置
-            //             // reset();
-            //             return "数据有误";
-            //         }
-            //     }
-            // });
-            // // 未匹配利润
-            // Object.defineProperty(grid, "unmatchedProfit", {
-            //     get: function () {
-            //         let e = document.querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[7];
-
-            //         if (e && !this.destruction) {
-            //             return [e.querySelectorAll("span")[0].innerText, e.querySelectorAll("span")[1].innerText];
-            //         } else {
-            //             // 销毁
-            //             this.destruction = true;
-            //             // 重置
-            //             // reset();
-            //             return "数据有误";
-            //         }
-            //     }
-            // });
-            // // 配对次数
-            // Object.defineProperty(grid, "totalMatchedTrades", {
-            //     get: function () {
-            //         let e = document.querySelectorAll(`.bn-table tr[data-row-key="${this.id}"] td`)[8];
-            //         if (e && !this.destruction) {
-            //             return e.innerText;
-            //         } else {
-            //             // 销毁
-            //             this.destruction = true;
-            //             // 重置
-            //             // reset();
-            //             return "数据有误";
-            //         }
-            //     }
-            // });
             _this.gridDom.push(grid);
             //
             let td = document.querySelector(`tbody>tr[data-row-key="${grid.id}"]`).querySelector("td:last-child");
@@ -388,15 +436,7 @@ class gridMain {
                     "background: #35495e; padding: 4px; border-radius: 3px 0 0 3px; color: #fff; font-weight: bold;",
                     "background: #41b883; padding: 4px; border-radius: 0 3px 3px 0; color: #fff; font-weight: bold;"
                 );
-                GRIDtimerId = setInterval(function () {
-                    let e = document.querySelector(".bn-table-tbody>tr");
-                    if (e) {
-                        clearInterval(GRIDtimerId); // 停止定时器
-                        GRIDtimerId = null;
-                        GRIDElength = document.querySelectorAll(".bn-table-tbody>tr").length;
-                        GRID = new gridMain();
-                    }
-                }, 1000);
+                ini();
             }
         }, 2000);
         // console.log(_this.gridDom);
@@ -461,7 +501,9 @@ class gridMain {
                     if (e) {
                         e.click();
                         timerId2 = setInterval(function () {
-                            if (!e) {
+                            let e = document.querySelectorAll(".terminate-button-group button")[1];
+                            let btn = document.querySelector(`tbody>tr[data-row-key="${grid.id}"]`);
+                            if (!e || !btn) {
                                 clearInterval(timerId2);
                                 timerId2 = null;
                                 GRID = null;
@@ -484,7 +526,6 @@ class gridMain {
         );
     }
     // 动态添加标签
-   
 }
 // 添加
 // Local.add('userData', {name:"12"});
@@ -496,54 +537,10 @@ class gridMain {
 // Local.getAll();
 //
 // GRID = new gridMain();
-async function generateSHA256() {
-    // 创建一个新的canvas元素
-    const outScreenCanvas = document.createElement("canvas");
-    outScreenCanvas.width = 250; // 设置canvas宽度
-    outScreenCanvas.height = 20; // 设置canvas高度
 
-    // 在canvas上绘制文本
-    const ctx = outScreenCanvas.getContext("2d");
-    ctx.font = "14px Arial";
-    ctx.fillStyle = "#f60";
-    ctx.fillRect(125, 1, 62, 20);
-    ctx.fillStyle = "#069";
-    ctx.fillText("<canvas>", 2, 15);
-    ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
-    ctx.fillText("<canvas>", 4, 17);
+ini();
 
-    // 计算SHA-256哈希值并返回
-    return await sha256(outScreenCanvas.toDataURL());
-}
-
-async function sha256(str) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(str);
-    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray.map((byte) => byte.toString(16).padStart(2, "0")).join("");
-    return hashHex;
-}
-
-(async () => {
-    const hashValue = await generateSHA256();
-    // prompt('复制机器码给开发人员', hashValue);
-    
-})();
-// 
-GRIDtimerId = setInterval(function () {
-    let e = document.querySelector(".bn-table-tbody>tr");
-    if (e) {
-        clearInterval(GRIDtimerId);
-        GRIDtimerId = null;
-        GRIDElength = document.querySelectorAll(".bn-table-tbody>tr").length;
-        GRID = new gridMain();
-        // 定时刷新
-        document.addEventListener("mousemove", debounce(resetTimer, 1000));
-        document.addEventListener("keypress", debounce(resetTimer, 1000));
-        resetTimer();
-    }
-}, 1000);
+//
 
 // initializeMonitoring() {
 //     let _this = this;

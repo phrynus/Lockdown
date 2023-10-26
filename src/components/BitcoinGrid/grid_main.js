@@ -382,7 +382,7 @@ class gridMain {
                             } else {
                                 e.click();
                             }
-                        }, 20);
+                        }, 200);
                         clearInterval(timerId1);
                         timerId1 = null;
                     }
